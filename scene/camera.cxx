@@ -1,6 +1,6 @@
 #include "headers/camera.hxx"
-#include <algorithm>
 #include <cmath>
+#include <algorithm>
 
 Camera::Camera(
     Vector3f position,

@@ -2,69 +2,44 @@
 #define COLLIDER_HXX
 
 #include "../../math/headers/vec3.hxx"
+#include "../../math/headers/mat3.hxx"
 
-enum class ColliderType
+class Collider
 {
-    Sphere,
-    Box,
-    Plane // infinite half-space: all points where dot(normal, x) >= distance
+public:
+    Collider() {}
+    ~Collider() {}
 
+    virtual Mat3x3   inertiaTensor() = 0;
+    virtual Vector3f centerOfMass()  = 0;
 };
 
-struct Collider
+class SphereCollider : Collider
 {
-    ColliderType type = ColliderType::Sphere;
+public:
+    SphereCollider() = default;
+    SphereCollider(float radius) : m_radius(radius) {}
 
-    Collider() : sphere{0.0f} {}
-
-    union{
-        struct
-        {
-            float radius;
-        } sphere;
-
-        struct
-        {
-            // Half-extents: distance from centre to face along each axis.
-            // A 1x1x1 cube has halfExtents = {0.5, 0.5, 0.5}
-            Vector3f halfExtents;
-        } box;
-
-        struct
-        {
-            // Plane equation: dot(normal, point) = distance
-            // normal must be unit length.
-            // Example: floor at y=0 facing up: normal={0,1,0}, distance=0
-            //          floor at y=-1.5:        normal={0,1,0}, distance=-1.5
-            Vector3f normal;
-            float    distance;
-        } plane;
-    };
-
-    static Collider makeSphere(float radius)
+    Vector3f centerOfMass() override
     {
-        Collider c;
-        c.type          = ColliderType::Sphere;
-        c.sphere.radius = radius;
-        return c;
+        return Vector3f(0.0);
     }
 
-    static Collider makeBox(Vector3f halfExtents)
+    Mat3x3 inertiaTensor() override
     {
-        Collider c;
-        c.type            = ColliderType::Box;
-        c.box.halfExtents = halfExtents;
-        return c;
+        float i = (2.0f / 5.0f) * m_radius * m_radius;
+
+        return Mat3x3(
+            Vector3f(i, 0.0, 0.0),
+            Vector3f(0.0, i, 0.0),
+            Vector3f(0.0, 0.0, 1)
+        );
     }
 
-    static Collider makePlane(Vector3f normal, float distance)
-    {
-        Collider c;
-        c.type           = ColliderType::Plane;
-        c.plane.normal   = normal;
-        c.plane.distance = distance;
-        return c;
-    }
+    float radius() const { return m_radius; }
+
+private:
+    float m_radius = 0; 
 };
 
 #endif

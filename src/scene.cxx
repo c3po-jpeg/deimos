@@ -32,7 +32,7 @@ void Scene::initializeCamera(int windowWidth, int windowHeight)
 
 void Scene::initializePhysics()
 {
-    m_physicsWorld = std::make_unique<PhysicsWorld>();
+    //m_physicsWorld = std::make_unique<PhysicsWorld>();
 }
 
 void Scene::initializeLight()
@@ -48,7 +48,7 @@ void Scene::addFloor(float width, float height)
     auto floorBody = std::make_unique<RigidBody>();
     floorBody->collider = Collider::makePlane(Vector3f(0.0f, 1.0f, 0.0f), -1.5f);
     floorBody->makeStatic();
-    m_physicsWorld->addBody(floorBody.get());
+   // m_physicsWorld->addBody(floorBody.get());
 
     // Floor rendering shape
     auto floor = std::make_unique<Plane>(m_core, width, Vector3f(0.35f, 0.4f, 0.35f), height);
@@ -56,7 +56,7 @@ void Scene::addFloor(float width, float height)
     floor->setMaterial(Material::checker({1.0,1.0,1.0},{0.4,0.4,0.4},1.0)); // Matte floor
     floor->upload();
     m_shapes.push_back(std::move(floor));
-    m_rigidBodies.push_back(std::move(floorBody));
+   // m_rigidBodies.push_back(std::move(floorBody));
     m_drawablesDirty = true;
 }
 
@@ -75,7 +75,7 @@ void Scene::addCubeSphere(float x, float y, float z, float radius, int subDivisi
     }
     
     RigidBody *bodyPtr = sphereBody.get();
-    m_physicsWorld->addBody(bodyPtr);
+   // m_physicsWorld->addBody(bodyPtr);
 
     // Rendering sphere
     auto sphere = std::make_unique<CubeSphere>(m_core, radius, subDivisions);
@@ -84,7 +84,7 @@ void Scene::addCubeSphere(float x, float y, float z, float radius, int subDivisi
     sphere->upload();
     
     m_shapes.push_back(std::move(sphere));
-    m_rigidBodies.push_back(std::move(sphereBody));
+   // m_rigidBodies.push_back(std::move(sphereBody));
     m_drawablesDirty = true;
 }
 void Scene::addIcoSphere(float x, float y, float z, float radius, int subDivisions,const Material &material, float mass, bool isStatic)
@@ -102,7 +102,7 @@ void Scene::addIcoSphere(float x, float y, float z, float radius, int subDivisio
     }
     
     RigidBody *bodyPtr = sphereBody.get();
-    m_physicsWorld->addBody(bodyPtr);
+   // m_physicsWorld->addBody(bodyPtr);
 
     // Rendering sphere
     auto sphere = std::make_unique<Icosphere>(m_core, radius, subDivisions);
@@ -111,7 +111,7 @@ void Scene::addIcoSphere(float x, float y, float z, float radius, int subDivisio
     sphere->upload();
     
     m_shapes.push_back(std::move(sphere));
-    m_rigidBodies.push_back(std::move(sphereBody));
+   // m_rigidBodies.push_back(std::move(sphereBody));
     m_drawablesDirty = true;
 }
 
@@ -126,7 +126,7 @@ void Scene::addBox(float x, float y, float z, float halfX, float halfY, float ha
     boxBody->setMass(mass);
     
     RigidBody *bodyPtr = boxBody.get();
-    m_physicsWorld->addBody(bodyPtr);
+   // m_physicsWorld->addBody(bodyPtr);
 
     // Rendering cube
     auto cube = std::make_unique<Cube>(m_core);
@@ -134,7 +134,7 @@ void Scene::addBox(float x, float y, float z, float halfX, float halfY, float ha
     cube->upload();
     
     m_shapes.push_back(std::move(cube));
-    m_rigidBodies.push_back(std::move(boxBody));
+  //  m_rigidBodies.push_back(std::move(boxBody));
     m_drawablesDirty = true;
 }
 
@@ -145,7 +145,7 @@ void Scene::update(float deltaTime, float aspect)
     Vector3f camPos   = m_camera->getPosition();
     m_light.cameraPos = Vector4f(camPos.x, camPos.y, camPos.z, 1.0f);
     // Update physics
-    m_physicsWorld->step(deltaTime);
+   // m_physicsWorld->step(deltaTime);
     
     // Sync render state with physics bodies
     syncRenderables();
@@ -181,7 +181,7 @@ void Scene::syncRenderables()
     // Match each physics body with its corresponding shape by index
     // Shapes are added in the same order as their corresponding physics bodies (after floor)
     
-    int shapeIdx = 0;  // Start from first shape
+    /* int shapeIdx = 0;  // Start from first shape
     
     // Skip plane shape if it exists (floor is static, doesn't need syncing)
     if (shapeIdx < m_shapes.size() && m_rigidBodies.size() > 0)
@@ -202,7 +202,7 @@ void Scene::syncRenderables()
             m_shapes[shapeIdx]->setRotation(body->orientation);
             shapeIdx++;
         }
-    }
+    } */
 
     m_drawablesDirty = true;
 }

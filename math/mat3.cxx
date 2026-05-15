@@ -44,7 +44,7 @@ Mat2x2 Mat3x3::minor(int a, int b) const
 float Mat3x3::cofactor(int a, int b) const
 {
   const Mat2x2 minor = this->minor(a, b);
-  const float c = float(pow(-1, a + 1 + b + 1)) * minor.determinant();
+  const float c = float((a + b) % 2 == 0 ? 1 : -1) * minor.determinant();
 
   return c;
 }
