@@ -4,17 +4,17 @@
 #include "../../math/headers/vec3.hxx"
 #include "../../math/headers/mat3.hxx"
 
+enum class ColliderType{
+    Plane,
+    Sphere,
+    Box
+};
+
 class Collider
 {
 public:
     Collider()  {};
     ~Collider() {}
-
-    enum class ColliderType{
-        Plane,
-        Sphere,
-        Box
-    };
 
     virtual Mat3x3       inertiaTensor() const = 0;
     virtual Vector3f     centerOfMass()  const = 0;

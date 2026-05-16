@@ -1,5 +1,6 @@
 #include "headers/collision.hxx"
 #include "headers/rigidbody.hxx"
+#include "headers/collider.hxx"
 
 Contact testSphereSphere(RigidBody &a, RigidBody &b) {
     Contact c;
@@ -23,4 +24,27 @@ Contact testSphereSphere(RigidBody &a, RigidBody &b) {
     }
 
     return c;
+}
+
+Contact testCollision(RigidBody &a, RigidBody &b) 
+{
+    switch (a.collider->getType())
+    {
+        case ColliderType::Sphere:
+            {
+                switch (b.collider->getType())
+                {
+                case ColliderType::Sphere:
+                    return testSphereSphere(a, b);
+                    break;
+                
+                default:
+                    return Contact();
+                }
+            }
+        default: 
+            return Contact();
+    }
+
+    return Contact();
 }
