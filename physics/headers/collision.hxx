@@ -34,13 +34,13 @@ struct Contact
 // Each returns a CollisionManifold. Check .hasCollision before using.
 // =============================================================================
 
-Contact testSphereSphere(RigidBody &a,      RigidBody &b);
+Contact testSphereSphere(RigidBody *a,      RigidBody *b);
 Contact testBoxBox      (RigidBody &a,      RigidBody &b);
 Contact testSpherePlane (RigidBody &sphere, RigidBody &plane);
 Contact testBoxPlane    (RigidBody &box,    RigidBody &plane);
 Contact testBoxSphere   (RigidBody &box,    RigidBody &sphere);
 
-Contact testCollision(RigidBody &a, RigidBody &b);
+Contact testCollision(RigidBody *a, RigidBody *b);
 
 // =============================================================================
 // Collision resolution

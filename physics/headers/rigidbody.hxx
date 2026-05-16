@@ -14,15 +14,18 @@ struct RigidBody
 
     // ---- Physical properties -----------------------------------------------
     float mass           = 1.0f;
-    float invMass        = 1.0f;  // precomputed; 0 for static bodies
     float restitution    = 0.4f;  // bounciness [0 = dead stop, 1 = perfect bounce]
     float friction       = 0.5f;  // used in tangential impulse
 
-    // ---- Inertia (diagonal of the inertia tensor in local space) -----------
-    // Stored as inverse so division becomes multiplication in the solver.
-    // Computed automatically by setMass() based on collider type.
-    Mat3x3   inertiaTensor;
-    Mat3x3   invInertiaTensor;
+    float invMass() const {
+        if (std::isinf(mass))
+            return 0.0;
+
+        return 1.0f / mass;
+    }  
+
+    //Mat3x3   inertiaTensor;
+    Mat3x3   invInertiaTensor() const;
 
     // ---- Accumulated forces (cleared at the end of each step) --------------
     Vector3f forceAccum  = {0.0f, 0.0f, 0.0f};
@@ -31,7 +34,7 @@ struct RigidBody
     // ---- Collision geometry -------------------------------------------------
     std::unique_ptr<Collider> collider;
 
-    void setMass(float m);
+    //void setMass(float m);
 
     /**
      * Make this body completely immovable.
@@ -39,6 +42,7 @@ struct RigidBody
      */
     void makeStatic();
 
+    void update(float dt);
 
     // Apply a force at a world-space point (generates both force and torque)
     void applyForceAtPoint(Vector3f force, Vector3f worldPoint);
