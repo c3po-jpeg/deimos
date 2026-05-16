@@ -7,11 +7,19 @@
 class Collider
 {
 public:
-    Collider() {}
+    Collider()  {};
     ~Collider() {}
 
-    virtual Mat3x3   inertiaTensor() = 0;
-    virtual Vector3f centerOfMass()  = 0;
+    enum class ColliderType{
+        Plane,
+        Sphere,
+        Box
+    };
+
+    virtual Mat3x3       inertiaTensor() const = 0;
+    virtual Vector3f     centerOfMass()  const = 0;
+    virtual ColliderType getType()       const = 0;
+
 };
 
 class SphereCollider : Collider
@@ -20,21 +28,23 @@ public:
     SphereCollider() = default;
     SphereCollider(float radius) : m_radius(radius) {}
 
-    Vector3f centerOfMass() override
+    Vector3f centerOfMass() const override
     {
         return Vector3f(0.0);
     }
 
-    Mat3x3 inertiaTensor() override
+    Mat3x3 inertiaTensor() const override
     {
         float i = (2.0f / 5.0f) * m_radius * m_radius;
 
         return Mat3x3(
             Vector3f(i, 0.0, 0.0),
             Vector3f(0.0, i, 0.0),
-            Vector3f(0.0, 0.0, 1)
+            Vector3f(0.0, 0.0, i)
         );
     }
+
+    ColliderType getType() const override { return ColliderType::Sphere; }
 
     float radius() const { return m_radius; }
 

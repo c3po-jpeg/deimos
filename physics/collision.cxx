@@ -11,7 +11,7 @@ Contact testSphereSphere(RigidBody &a, RigidBody &b) {
     // AB = OB - OA
     Vector3f ab = b.position - a.position; 
 
-    if(ab.magSqrd() < rTotal) 
+    if(ab.magSqrd() <= (rTotal * rTotal)) 
     {
         Vector3f normal    = ab.unit();
         c.hasCollision     = true;
