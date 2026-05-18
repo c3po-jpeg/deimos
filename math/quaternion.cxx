@@ -146,7 +146,7 @@ Quat operator*(const Quat &lhs, const Quat &rhs)
 bool operator==(const Quat &left, const Quat &right)
 {
   return (
-      fabsf(left.x - right.x)   <= QUAT_EPSILON &&
+      fabsf(left.x - right.x) <= QUAT_EPSILON &&
       fabsf(left.y - right.y) <= QUAT_EPSILON &&
       fabsf(left.z - right.z) <= QUAT_EPSILON &&
       fabsf(left.s - right.s) <= QUAT_EPSILON);

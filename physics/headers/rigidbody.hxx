@@ -5,6 +5,8 @@
 #include "collider.hxx"
 #include <memory>
 
+#define MAX_ANG_VEL 30.0f
+
 struct RigidBody
 {
     Vector3f position        = {0.0f, 0.0f, 0.0f};
@@ -25,16 +27,11 @@ struct RigidBody
     }  
 
     //Mat3x3   inertiaTensor;
-    Mat3x3   invInertiaTensor() const;
-
-    // ---- Accumulated forces (cleared at the end of each step) --------------
-    Vector3f forceAccum  = {0.0f, 0.0f, 0.0f};
-    Vector3f torqueAccum = {0.0f, 0.0f, 0.0f};
+    Mat3x3   getInvInertiaTensor() const;
 
     // ---- Collision geometry -------------------------------------------------
-    std::unique_ptr<Collider> collider;
+    std::unique_ptr<Collider> collider = nullptr;
 
-    //void setMass(float m);
 
     /**
      * Make this body completely immovable.
@@ -42,10 +39,18 @@ struct RigidBody
      */
     void makeStatic();
 
+    bool isStatic() const
+    {
+        return mass == INFINITY;
+    }
+
+    Vector3f centerOfMassWorld() const;
+    Vector3f centerOfMass() const;
+
     void update(float dt);
 
     // Apply a force at a world-space point (generates both force and torque)
-    void applyForceAtPoint(Vector3f force, Vector3f worldPoint);
+    void applyImpulseAtPoint(Vector3f impulse, Point3f worldPoint);
 
     // Apply an instantaneous velocity change (bypasses mass, used by solver)
     void applyLinearImpulse(Vector3f impulse);
@@ -53,13 +58,7 @@ struct RigidBody
     // Apply an angular impulse (used by solver)
     void applyAngularImpulse(Vector3f impulse);
 
-    Transform getTransform() const;
-
-    Mat3x3 getWorldInvInertia() const;
-
-    Vector3f velocityAtPoint(Vector3f worldPoint) const;
-
-
+    Mat3x3 getWorldInvInertiaTesnsor() const;
 };
 
 #endif

@@ -1,7 +1,6 @@
 #include "headers/physicsworld.hxx"
 #include "headers/collision.hxx"
 
-
 void PhysicsWorld::addRigidBody(RigidBody rb)
 {
     m_rigidBodies.push_back(std::make_unique<RigidBody>(rb));
@@ -9,11 +8,12 @@ void PhysicsWorld::addRigidBody(RigidBody rb)
 
 void PhysicsWorld::intergrate(float dt)
 {
-    for (auto &body: m_rigidBodies) 
+    for (auto &body : m_rigidBodies)
     {
+        Vector3f gravityImpulse = m_gravity * body->mass * dt;
+        body->applyLinearImpulse(gravityImpulse);
         body->update(dt);
     }
-
 }
 
 void PhysicsWorld::handleCollisions()
@@ -25,9 +25,12 @@ void PhysicsWorld::handleCollisions()
             auto a = m_rigidBodies[i].get();
             auto b = m_rigidBodies[j].get();
 
+            if (a->isStatic() && b->isStatic())
+                continue;
+
             auto contact = testCollision(a, b);
 
-            if(contact.hasCollision)
+            if (contact.hasCollision)
             {
                 resolveCollision(contact);
             }
