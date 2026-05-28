@@ -9,10 +9,10 @@
 #include "../../renderer/headers/material.hxx"
 
 class  Camera;
-//class  PhysicsWorld;
+class  PhysicsWorld;
 class  Core;
 class  Shape;
-//struct RigidBody;
+struct RigidBody;
 
 /**
  * Scene -- manages game objects, physics, camera, and lighting.
@@ -50,7 +50,7 @@ public:
     const std::vector<struct Drawable> &getDrawables() const;
 
     // ---- Physics --------------------------------------------------------
-    //PhysicsWorld &getPhysicsWorld() { return *m_physicsWorld; }
+    PhysicsWorld &getPhysicsWorld() { return *m_physicsWorld; }
 
     // ---- Scene setup (called before run()) --------- -----
     void addFloor(float width, float height = 10.0f);
@@ -62,8 +62,8 @@ private:
     Core &m_core;
 
     // Core components
-    std::unique_ptr<Camera>         m_camera;
-    //std::unique_ptr<PhysicsWorld>   m_physicsWorld;
+    std::unique_ptr<Camera>             m_camera;
+    std::unique_ptr<PhysicsWorld> m_physicsWorld;
 
     // Game objects (physics bodies)
    // std::vector<std::unique_ptr<RigidBody>> m_rigidBodies;

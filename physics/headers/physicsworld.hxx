@@ -10,6 +10,9 @@ class PhysicsWorld
 {
 public:
     PhysicsWorld() = default;
+
+    PhysicsWorld(const PhysicsWorld &)            = delete;
+    PhysicsWorld &operator=(const PhysicsWorld &) = delete;
     ~PhysicsWorld() {}
 
     Vector3f m_gravity = Vector3f(0.0, -9.8, 0.0);
@@ -19,12 +22,12 @@ public:
 
     void update(float dt) 
     {
-        intergrate(dt);
+        integrate(dt);
         handleCollisions();
     }
 
 private:
-    void intergrate(float dt);
+    void integrate(float dt);
     void handleCollisions();
 
 };

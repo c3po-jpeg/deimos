@@ -15,13 +15,15 @@ Contact testSphereSphere(RigidBody *a, RigidBody *b)
 
     if (ab.magSqrd() <= (rTotal * rTotal))
     {
-        Vector3f normal = ab.unit();
+        float dist = ab.mag();
+        Vector3f normal = dist > 1e-8f ? ab.unit() : Vector3f{1.0f, 0.0f, 0.0f};
         c.hasCollision = true;
         c.normal = normal;
         c.pointAWorldSpace = a->position + normal * ra;
         c.pointBWorldSpace = b->position - normal * rb;
         c.bodyA = a;
         c.bodyB = b;
+        c.penetrationDepth = (rTotal - dist);
     }
 
     return c;
@@ -67,49 +69,51 @@ void resolveCollision(Contact &contact)
 
     float restitution = a->restitution * b->restitution;
 
+    // --- velocity (impulse) resolution ---------------------------------
     Vector3f velA = a->linearVelocity + cross(a->angularVelocity, ra);
     Vector3f velB = b->linearVelocity + cross(b->angularVelocity, rb);
-    Vector3f vab  = velA - velB;
+    Vector3f vab = velA - velB;
 
     Vector3f angFactorA = cross(a->getWorldInvInertiaTesnsor() * cross(ra, normal), ra);
     Vector3f angFactorB = cross(b->getWorldInvInertiaTesnsor() * cross(rb, normal), rb);
     float angularFactor = dot(angFactorA + angFactorB, normal);
 
-    float j = (1.0 + restitution) * dot(vab, normal) / (totalInvMass + angularFactor);
+    // Standard impulse scalar: j = -(1+e) * (v_rel . n) / (invMassSum + angularFactor)
+    float j = (1.0f + restitution) * dot(vab, normal) / (totalInvMass + angularFactor);
     Vector3f impulse = normal * j;
 
-    a->applyImpulseAtPoint(-1.0 * impulse, ptAWorld);
-    b->applyImpulseAtPoint( 1.0 * impulse, ptBWorld);
+    // A is pushed back along -normal, B along +normal
+    a->applyImpulseAtPoint(impulse * -1.0f, ptAWorld);
+    b->applyImpulseAtPoint(impulse * 1.0f, ptBWorld);
 
-    // friction impulse
-
+    // --- friction impulse -------------------------------------------
     float friction = a->friction * b->friction;
 
-    Vector3f velA = a->linearVelocity + cross(a->angularVelocity, ra);
-    Vector3f velB = b->linearVelocity + cross(b->angularVelocity, rb);
-    Vector3f vab  = velA - velB;
+    // Recompute velocities after normal impulse
+    velA = a->linearVelocity + cross(a->angularVelocity, ra);
+    velB = b->linearVelocity + cross(b->angularVelocity, rb);
+    vab = velA - velB;
 
-    Vector3f velNormal  = normal * dot(normal, vab);
+    Vector3f velNormal = normal * dot(normal, vab);
     Vector3f velTangent = vab - velNormal;
-    float tangLenSqrd   = velTangent.magSqrd();
+    float tangLenSqrd = velTangent.magSqrd();
 
     if (tangLenSqrd > 1e-10f)
     {
         Vector3f tangDir = velTangent.unit();
 
-        Vector3f angFricA    = cross(a->getWorldInvInertiaTesnsor() * cross(ra, tangDir), ra);
-        Vector3f angFricB    = cross(b->getWorldInvInertiaTesnsor() * cross(rb, tangDir), rb);
+        Vector3f angFricA = cross(a->getWorldInvInertiaTesnsor() * cross(ra, tangDir), ra);
+        Vector3f angFricB = cross(b->getWorldInvInertiaTesnsor() * cross(rb, tangDir), rb);
         float invInertiaTang = dot(angFricA + angFricB, tangDir);
 
-        float reducedMass    = 1.0f / (totalInvMass + invInertiaTang);
+        float reducedMass = 1.0f / (totalInvMass + invInertiaTang);
         Vector3f fricImpulse = velTangent * (-reducedMass * friction);
 
-        a->applyImpulseAtPoint( 1.0 * fricImpulse, ptAWorld);
-        b->applyImpulseAtPoint(-1.0 * fricImpulse, ptBWorld);
+        a->applyImpulseAtPoint(fricImpulse *  1.0f, ptAWorld);
+        b->applyImpulseAtPoint(fricImpulse * -1.0f, ptBWorld);
     }
 
-    Vector3f ds = ptAWorld - ptBWorld;
-
+    Vector3f ds = ptBWorld - ptAWorld;
     float ta = a->invMass() / totalInvMass;
     float tb = b->invMass() / totalInvMass;
 

@@ -22,7 +22,7 @@ public:
 
 };
 
-class SphereCollider : Collider
+class SphereCollider : public Collider
 {
 public:
     SphereCollider() = default;

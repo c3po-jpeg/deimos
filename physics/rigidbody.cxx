@@ -1,72 +1,38 @@
 #include "headers/rigidbody.hxx"
 
-Mat3x3 RigidBody::getInvInertiaTensor() const
+void RigidBody::calcDerivedData()
 {
-    collider->inertiaTensor().inverse() * invMass();
+    m_transform.orientation = m_orientation.unit();
+    m_transform.translation = m_position;
+    m_transform.scaling     = Vector3f(1.0f);
 }
 
-Mat3x3 RigidBody::getWorldInvInertiaTesnsor() const
+void RigidBody::addForce(const Vector3f &force)
 {
-    Mat3x3 r = orientation.toMat3x3();
-    return r * getInvInertiaTensor() * r.transpose();
+    m_forceAccum += force;
+    m_isAwake = true;
 }
 
-Vector3f RigidBody::centerOfMass() const
+void RigidBody::integrate(float dt)
 {
-    return collider->centerOfMass();
+    clearAccumulators();
 }
 
-Vector3f RigidBody::centerOfMassWorld() const
+void RigidBody::getPointInLocalSpace(const Vector3f &point, Vector3f &result) const
 {
-    return position + orientation * centerOfMass();
+    Vector3f pt = point - m_position;
+    result = m_transform.orientation.conjugate().toMat3x3() * pt;
 }
 
-void RigidBody::makeStatic()
+Vector3f RigidBody::getPointInWorldSpace(const Vector3f &point) const
 {
-    mass = INFINITY;
+    return m_transform.orientation.toMat3x3() * point + m_position;
 }
 
-void RigidBody::applyLinearImpulse(Vector3f impulse)
+void RigidBody::applyForceAtBodyPoint(const Vector3f &force, const Vector3f &point)
 {
-    // J = dv*m
-    // dv= J * m^-1
-    linearVelocity += impulse * invMass();
-}
+    Vector3f pt = getPointInWorldSpace(point);
+    applyForceAtPoint(force, pt);
 
-void RigidBody::applyAngularImpulse(Vector3f impulse)
-{
-    angularVelocity += getWorldInvInertiaTesnsor() * impulse;
-
-    if (angularVelocity.magSqrd() > (MAX_ANG_VEL * MAX_ANG_VEL))
-    {
-        angularVelocity = angularVelocity.unit() * MAX_ANG_VEL;
-    }
-}
-
-void RigidBody::applyImpulseAtPoint(Vector3f impulse, Point3f point)
-{
-    applyLinearImpulse(impulse);
-    Vector3f r = point - centerOfMassWorld();
-    applyAngularImpulse(cross(r, impulse));
-}
-
-void RigidBody::update(float dt)
-{
-    if (isStatic())
-        return;
-
-    position        += linearVelocity * dt;
-    Vector3f cmToPos = position - centerOfMassWorld();
-
-    Mat3x3 r             = orientation.toMat3x3();
-    Mat3x3 inertia_world = r * collider->inertiaTensor() * r.transpose();
-    Vector3f alpha       = inertia_world.inverse() * cross(angularVelocity, inertia_world * angularVelocity);
-    angularVelocity     += alpha * dt;
-
-    Vector3f dAngle = angularVelocity * dt;
-    float angle     = dAngle.mag();
-    Quat dq         = angle > 1e-8 ? Quat(to_degrees(angle), dAngle) : Quat();
-
-    orientation = (dq * orientation).unit();
-    position = centerOfMassWorld() + dq * cmToPos;
+    m_isAwake = true;
 }

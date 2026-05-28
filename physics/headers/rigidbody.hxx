@@ -7,58 +7,64 @@
 
 #define MAX_ANG_VEL 30.0f
 
-struct RigidBody
+class RigidBody
 {
-    Vector3f position        = {0.0f, 0.0f, 0.0f};
-    Quat     orientation     = Quat();
-    Vector3f linearVelocity  = {0.0f, 0.0f, 0.0f};
-    Vector3f angularVelocity = {0.0f, 0.0f, 0.0f};
+public: 
+    RigidBody(std::unique_ptr<Collider> collider) : m_collider(std::move(collider)) {}
 
-    // ---- Physical properties -----------------------------------------------
-    float mass           = 1.0f;
-    float restitution    = 0.4f;  // bounciness [0 = dead stop, 1 = perfect bounce]
-    float friction       = 0.5f;  // used in tangential impulse
+    RigidBody(const RigidBody &)            = delete;
+    RigidBody &operator=(const RigidBody &) = delete;
 
-    float invMass() const {
-        if (std::isinf(mass))
-            return 0.0;
+    void calcDerivedData();
 
-        return 1.0f / mass;
-    }  
+    const Mat3x3 getWorldInvIntertiaTensor() const
+    {
+        Mat3x3 r = m_transform.orientation.toMat3x3();
+        return r * getInverseInertiaTensor() * r.transpose();
+    }
 
-    //Mat3x3   inertiaTensor;
-    Mat3x3   getInvInertiaTensor() const;
+    const Mat3x3 getInverseInertiaTensor() const
+    {
+        return m_collider->inertiaTensor().inverse();
+    }
 
-    // ---- Collision geometry -------------------------------------------------
-    std::unique_ptr<Collider> collider = nullptr;
+    void addForce(const Vector3f &force);
 
-
-    /**
-     * Make this body completely immovable.
-     * Equivalent to infinite mass -- absorbs any impulse without moving.
-     */
-    void makeStatic();
+    void clearAccumulators()
+    {
+        m_forceAccum  = Vector3f(0.0f);
+        m_torqueAccum = Vector3f(0.0f);
+    }
 
     bool isStatic() const
     {
-        return mass == INFINITY;
+        return m_mass == INFINITY;
     }
 
-    Vector3f centerOfMassWorld() const;
-    Vector3f centerOfMass() const;
+    void integrate(float dt);
 
-    void update(float dt);
+    void applyForceAtPoint(const Vector3f &force, const Vector3f &point);
+    void applyForceAtBodyPoint(const Vector3f &force, const Vector3f &point);
 
-    // Apply a force at a world-space point (generates both force and torque)
-    void applyImpulseAtPoint(Vector3f impulse, Point3f worldPoint);
+    void getPointInLocalSpace(const Vector3f &point, Vector3f &result) const;
+    Vector3f getPointInWorldSpace(const Vector3f &point) const;
 
-    // Apply an instantaneous velocity change (bypasses mass, used by solver)
-    void applyLinearImpulse(Vector3f impulse);
+protected:
+    float     m_mass = 1.0f;
 
-    // Apply an angular impulse (used by solver)
-    void applyAngularImpulse(Vector3f impulse);
+    float     m_linearDamping = 0.5f;
 
-    Mat3x3 getWorldInvInertiaTesnsor() const;
+    Vector3f  m_position;
+    Quat      m_orientation;
+    Vector3f  m_velocity;
+    Vector3f  m_rotation;
+    Vector3f  m_forceAccum;
+    Vector3f  m_torqueAccum;
+    bool      m_isAwake;
+
+    Transform m_transform;
+
+    std::unique_ptr<Collider> m_collider;
 };
 
 #endif
