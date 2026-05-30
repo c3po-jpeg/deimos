@@ -18,7 +18,7 @@ public:
     Vector3f m_gravity = Vector3f(0.0, -9.8, 0.0);
     std::vector<std::unique_ptr<RigidBody>> m_rigidBodies;
 
-    void addRigidBody(RigidBody rb);
+    void addRigidBody(RigidBody &&rb);
 
     void update(float dt) 
     {

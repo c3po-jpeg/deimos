@@ -81,7 +81,7 @@ protected:
     Material              m_material{};
     MaterialDescriptor    m_materialDescriptor;
     std::vector<Vertex3D> m_vertices;  // filled by buildGeometry()
-    std::vector<uint16_t> m_indices;
+    std::vector<uint32_t> m_indices;
 
     /**
      * Derived classes override this to populate m_vertices.

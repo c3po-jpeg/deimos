@@ -19,6 +19,8 @@ public:
     virtual Mat3x3       inertiaTensor() const = 0;
     virtual Vector3f     centerOfMass()  const = 0;
     virtual ColliderType getType()       const = 0;
+protected:
+    Vector3f m_centerOfMass = Vector3f(0.0);
 
 };
 
@@ -30,7 +32,7 @@ public:
 
     Vector3f centerOfMass() const override
     {
-        return Vector3f(0.0);
+        return m_centerOfMass;
     }
 
     Mat3x3 inertiaTensor() const override

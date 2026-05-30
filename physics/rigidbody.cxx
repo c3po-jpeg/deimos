@@ -1,38 +1,36 @@
 #include "headers/rigidbody.hxx"
 
-void RigidBody::calcDerivedData()
+Vector3f RigidBody::getCenterOfMassLocal() const
 {
-    m_transform.orientation = m_orientation.unit();
-    m_transform.translation = m_position;
-    m_transform.scaling     = Vector3f(1.0f);
+    return collider->centerOfMass();
 }
 
-void RigidBody::addForce(const Vector3f &force)
+Vector3f RigidBody::getCenterOfMassWorld() const 
 {
-    m_forceAccum += force;
-    m_isAwake = true;
+    const Vector3f localCOM = getCenterOfMassLocal();
+    return position() + orientation() * localCOM;
 }
 
-void RigidBody::integrate(float dt)
+Vector3f RigidBody::WorldToLocal(const Vector3f &point) const
 {
-    clearAccumulators();
+    return orientation().inverse() * (point - getCenterOfMassWorld());
 }
 
-void RigidBody::getPointInLocalSpace(const Vector3f &point, Vector3f &result) const
+Vector3f RigidBody::LocalToWorld(const Vector3f &point) const
 {
-    Vector3f pt = point - m_position;
-    result = m_transform.orientation.conjugate().toMat3x3() * pt;
+    return getCenterOfMassWorld() + orientation() * point;
 }
 
-Vector3f RigidBody::getPointInWorldSpace(const Vector3f &point) const
+void RigidBody::applyLinearImpulse(const Vector3f &impulse)
 {
-    return m_transform.orientation.toMat3x3() * point + m_position;
+    if (!isStatic())
+    {
+        velocity += impulse * inverseMass();
+    }
 }
 
-void RigidBody::applyForceAtBodyPoint(const Vector3f &force, const Vector3f &point)
+Mat3x3 RigidBody::getWorldInvIntertiaTensor() const
 {
-    Vector3f pt = getPointInWorldSpace(point);
-    applyForceAtPoint(force, pt);
-
-    m_isAwake = true;
+    Mat3x3 r = orientation().toMat3x3();
+    return r * getInverseInertiaTensor() * r.transpose();
 }

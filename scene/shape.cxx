@@ -39,7 +39,7 @@ void Shape::upload()
     if(!m_indices.empty())
     {
         m_indexBuffer.create(
-            sizeof(uint16_t) * m_indices.size(),
+            sizeof(uint32_t) * m_indices.size(),
             VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
@@ -174,8 +174,8 @@ void Cube::buildGeometry()
         // Two triangles per face (CCW winding): 0-1-2 and 0-2-3
         m_indices.insert(m_indices.end(),
             {
-                static_cast<uint16_t>(base+0), static_cast<uint16_t>(base+1), static_cast<uint16_t>(base+2),
-                static_cast<uint16_t>(base+0), static_cast<uint16_t>(base+2), static_cast<uint16_t>(base+3)});
+                static_cast<uint32_t>(base+0), static_cast<uint32_t>(base+1), static_cast<uint32_t>(base+2),
+                static_cast<uint32_t>(base+0), static_cast<uint32_t>(base+2), static_cast<uint32_t>(base+3)});
     }
 }
 
@@ -270,26 +270,26 @@ void CubeSphere::buildGeometry()
     for (int i = 0; i < 6; i++)
     {
         size_t base = m_vertices.size();
-        for (uint16_t row = 0; row < m_subdivisions; ++row)
+        for (uint32_t row = 0; row < m_subdivisions; ++row)
         {
-            for(uint16_t col = 0; col < m_subdivisions; ++col)
+            for(uint32_t col = 0; col < m_subdivisions; ++col)
             {
                 
-                uint16_t idx1 = ((uint16_t)m_subdivisions + 1) * row        + col + 0;
-                uint16_t idx2 = ((uint16_t)m_subdivisions + 1) * (row + 1)  + col + 0;
-                uint16_t idx3 = ((uint16_t)m_subdivisions + 1) * row        + col + 1;
+                uint32_t idx1 = ((uint32_t)m_subdivisions + 1) * row        + col + 0;
+                uint32_t idx2 = ((uint32_t)m_subdivisions + 1) * (row + 1)  + col + 0;
+                uint32_t idx3 = ((uint32_t)m_subdivisions + 1) * row        + col + 1;
 
-                uint16_t idx4 = ((uint16_t)m_subdivisions + 1) * row        + col + 1;
-                uint16_t idx5 = ((uint16_t)m_subdivisions + 1) * (row + 1)  + col + 0;
-                uint16_t idx6 = ((uint16_t)m_subdivisions + 1) * (row + 1)  + col + 1;
+                uint32_t idx4 = ((uint32_t)m_subdivisions + 1) * row        + col + 1;
+                uint32_t idx5 = ((uint32_t)m_subdivisions + 1) * (row + 1)  + col + 0;
+                uint32_t idx6 = ((uint32_t)m_subdivisions + 1) * (row + 1)  + col + 1;
 
-                m_indices.push_back((uint16_t)base + idx1);
-                m_indices.push_back((uint16_t)base + idx2);
-                m_indices.push_back((uint16_t)base + idx3);
+                m_indices.push_back(static_cast<uint32_t>(base) + idx1);
+                m_indices.push_back(static_cast<uint32_t>(base) + idx2);
+                m_indices.push_back(static_cast<uint32_t>(base) + idx3);
 
-                m_indices.push_back((uint16_t)base + idx4);
-                m_indices.push_back((uint16_t)base + idx5);
-                m_indices.push_back((uint16_t)base + idx6);
+                m_indices.push_back(static_cast<uint32_t>(base) + idx4);
+                m_indices.push_back(static_cast<uint32_t>(base) + idx5);
+                m_indices.push_back(static_cast<uint32_t>(base) + idx6);
             }
             
         }

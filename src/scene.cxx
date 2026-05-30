@@ -42,35 +42,16 @@ void Scene::initializeLight()
     m_light.ambient   = {0.1f,  0.1f, 0.15f, 0.0f}; // cool ambient
 }
 
-/* void Scene::addFloor(float width, float height)
-{
-    // Floor (static plane)
-    auto floorBody = std::make_unique<RigidBody>();
-    floorBody->collider = Collider::makePlane(Vector3f(0.0f, 1.0f, 0.0f), -1.5f);
-    floorBody->makeStatic();
-   // m_physicsWorld->addBody(floorBody.get());
-
-    // Floor rendering shape
-    auto floor = std::make_unique<Plane>(m_core, width, Vector3f(0.35f, 0.4f, 0.35f), height);
-    floor->setPosition({0.0f, -1.5f, 0.0f});
-    floor->setMaterial(Material::checker({1.0,1.0,1.0},{0.4,0.4,0.4},1.0)); // Matte floor
-    floor->upload();
-    m_shapes.push_back(std::move(floor));
-   // m_rigidBodies.push_back(std::move(floorBody));
-    m_drawablesDirty = true;
-} */
-
 void Scene::addCubeSphere(float x, float y, float z, float radius, int subDivisions,const Material &material, float mass, bool isStatic)
 {
     // Physics body
-    auto sphereBody = RigidBody();
-    sphereBody.position   = Vector3f(x, y, z);
-    sphereBody.collider   = std::make_unique<SphereCollider>(radius);
+    RigidBody sphereBody               = RigidBody(std::make_unique<SphereCollider>(radius));
+    sphereBody.transform.translation   = Vector3f(x, y, z);
     if(isStatic){
         sphereBody.makeStatic();
     } else{
-        sphereBody.restitution = 0.8f;
-        sphereBody.friction    = 0.5f;
+        /* sphereBody.restitution = 0.8f;
+        sphereBody.friction    = 0.5f; */
         sphereBody.mass        = mass;
     }
     
@@ -85,54 +66,7 @@ void Scene::addCubeSphere(float x, float y, float z, float radius, int subDivisi
     m_shapes.push_back(std::move(sphere));
     m_drawablesDirty = true;
 }
-void Scene::addIcoSphere(float x, float y, float z, float radius, int subDivisions,const Material &material, float mass, bool isStatic)
-{
-    // Physics body
-    auto sphereBody = RigidBody();
-    sphereBody.position   = Vector3f(x, y, z);
-    sphereBody.collider   = std::make_unique<SphereCollider>(radius);
-    if(isStatic){
-        sphereBody.makeStatic();
-    } else{
-        sphereBody.restitution = 0.6f;
-        sphereBody.friction    = 0.4f;
-        sphereBody.mass        = mass;
-    }
-    
-    m_physicsWorld->addRigidBody(std::move(sphereBody));
 
-    // Rendering sphere
-    auto sphere = std::make_unique<Icosphere>(m_core, radius, subDivisions);
-    sphere->setMaterial(material);
-    sphere->setPosition({x, y, z});
-    sphere->upload();
-    
-    m_shapes.push_back(std::move(sphere));
-    m_drawablesDirty = true;
-}
-
-/* void Scene::addBox(float x, float y, float z, float halfX, float halfY, float halfZ, float mass)
-{
-    // Physics body
-    auto boxBody = std::make_unique<RigidBody>();
-    boxBody->position    = Vector3f(x, y, z);
-    boxBody->collider    = Collider::makeBox(Vector3f(halfX, halfY, halfZ));
-    boxBody->restitution = 0.3f;
-    boxBody->friction    = 0.6f;
-    boxBody->setMass(mass);
-    
-    RigidBody *bodyPtr = boxBody.get();
-   // m_physicsWorld->addBody(bodyPtr);
-
-    // Rendering cube
-    auto cube = std::make_unique<Cube>(m_core);
-    cube->setPosition({x, y, z});
-    cube->upload();
-    
-    m_shapes.push_back(std::move(cube));
-  //  m_rigidBodies.push_back(std::move(boxBody));
-    m_drawablesDirty = true;
-} */
 
 void Scene::update(float deltaTime, float aspect)
 {
@@ -184,9 +118,7 @@ void Scene::syncRenderables()
         const auto &body = m_physicsWorld->m_rigidBodies[bodyIdx];
         if (!body->isStatic())  // Skip static plane
         {
-            m_shapes[shapeIdx]->setPosition(body->position);
-            m_shapes[shapeIdx]->setRotation(body->orientation);
-            
+            m_shapes[shapeIdx]->setTransform(body->transform);
         }
         
     }
