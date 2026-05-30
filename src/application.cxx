@@ -19,7 +19,7 @@
 #include "../renderer/headers/drawable.hxx"
 #include "../renderer/headers/ubo.hxx"
 
-#include "../scene/headers/camera.hxx"
+#include "headers/camera.hxx"
 
 Application::Application(const std::string &title, int width, int height)
     : m_width(width), m_height(height)

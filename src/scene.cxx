@@ -1,8 +1,13 @@
 #include "headers/scene.hxx"
+#include "headers/camera.hxx"
 
 #include <SDL2/SDL.h>
-#include "../scene/headers/camera.hxx"
-#include "../scene/headers/shape.hxx"
+
+#include "../geometry/headers/shape.hxx"
+#include "../geometry/headers/cube.hxx"
+#include "../geometry/headers/cubesphere.hxx"
+#include "../geometry/headers/icosphere.hxx"
+#include "../geometry/headers/plane.hxx"
 #include "../physics/headers/physicsworld.hxx"
 #include "../physics/headers/rigidbody.hxx"
 #include "../physics/headers/collider.hxx"

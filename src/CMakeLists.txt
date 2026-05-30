@@ -6,6 +6,7 @@ add_executable(enceladus
     main.cxx
     scene.cxx
     application.cxx
+    camera.cxx
 )
 
 target_link_libraries(enceladus
@@ -14,7 +15,7 @@ target_link_libraries(enceladus
         SDL2::SDL2
         enceladus_math   # your custom math library
         enceladus_renderer
-        enceladus_scene
+        enceladus_geometry
         enceladus_physics
         imgui            # Dear ImGui (Vulkan + SDL2 backends)
 )
@@ -22,9 +23,8 @@ target_link_libraries(enceladus
 target_include_directories(enceladus
     PRIVATE
         ../renderer/headers
-        ../scene/headers
         ../physics/headers
-        
+        ../geometry/headers
         # enceladus_math and imgui expose their own include dirs via PUBLIC
         # in their own CMakeLists, so no need to repeat them here.
 )
