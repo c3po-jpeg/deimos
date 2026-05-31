@@ -4,7 +4,7 @@ void Cube::buildGeometry()
 {
     const float s = m_size;
 
-    // Per-face colours (used when m_color == {-1,-1,-1})
+    // Per-face colors (used when m_color == {-1,-1,-1})
     const std::array<Vector3f, 6> faceColors = {{
         {0.9f, 0.2f, 0.3f}, // +X  red
         {0.2f, 0.3f, 0.8f}, // -X  blue

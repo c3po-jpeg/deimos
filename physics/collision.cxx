@@ -50,12 +50,18 @@ Contact testCollision(RigidBody *a, RigidBody *b)
 void resolveCollision(Contact &contact)
 {
     RigidBody *bodyA = contact.bodyA;
-    RigidBody *bodyB = contact.bodyB;
-
-    contact.bodyA->velocity = Vector3f(0.0f);
-    contact.bodyB->velocity = Vector3f(0.0f);
+    RigidBody *bodyB = contact.bodyB;     
 
     const float totalInverseMass = bodyA->inverseMass() + bodyB->inverseMass();
+
+    const Vector3f n = contact.normal;
+
+    const Vector3f vab = bodyB->velocity - bodyA->velocity;
+    const float impulseJ = -2.0 * dot(vab, n) / totalInverseMass;
+    const Vector3f impulse = impulseJ * n;
+
+    bodyA->applyLinearImpulse(-1.0*impulse);
+    bodyB->applyLinearImpulse( 1.0*impulse);
 
     const float ta = bodyA->inverseMass() / totalInverseMass;
     const float tb = bodyB->inverseMass() / totalInverseMass;
