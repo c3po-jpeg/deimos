@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
             Scene scene(app.getCore(), WINDOW_WIDTH, WINDOW_HEIGHT);
             // Add game objects
             // Large static floor
-            scene.addCubeSphere(0.0f, -1002.0f, 0.0f, 1000.0f, 300, 
+            scene.addCubeSphere(0.0f, -1002.0f, 0.0f, 1000.0f, 400, 
                 Material::checker({1.0,1.0,1.0}, {0.4,0.4,0.4}, 300.0), 
                 1.0f, true); 
 
