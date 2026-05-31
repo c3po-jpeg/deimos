@@ -38,7 +38,7 @@ public:
     /**
      * Handle camera input (mouse and keyboard).
      */
-    void handleInput(float deltaTime, const uint8_t *keys, int mouseX, int mouseY);
+    void handleInput(float deltaTime, const bool *keys, int mouseX, int mouseY);
 
     // ---- Accessors for rendering ----------------------------------------
 
@@ -62,11 +62,8 @@ private:
     Core &m_core;
 
     // Core components
-    std::unique_ptr<Camera>             m_camera;
+    std::unique_ptr<Camera>       m_camera;
     std::unique_ptr<PhysicsWorld> m_physicsWorld;
-
-    // Game objects (physics bodies)
-   // std::vector<std::unique_ptr<RigidBody>> m_rigidBodies;
 
     // Rendering shapes (all derived from Shape base class)
     std::vector<std::unique_ptr<Shape>>     m_shapes;

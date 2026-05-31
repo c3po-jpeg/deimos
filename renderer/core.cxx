@@ -7,7 +7,6 @@ const bool enableValidationLayers = true;
 #include "headers/core.hxx"
 #include "headers/constants.hxx"
 
-#include <SDL2/SDL_vulkan.h>
 #include <iostream>
 #include <set>
 #include <cstdint>   // Necessary for uint32_t
@@ -31,12 +30,10 @@ void Core::initVulkan(SDL_Window *window)
 Core::~Core()
 {
     vkDestroyCommandPool(m_device, m_commandPool, nullptr);
-    vkDestroyDevice(m_device, nullptr);
+    vkDestroyDevice(m_device, nullptr);          
     vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
     if (enableValidationLayers)
-    {
         DestroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, nullptr);
-    }
     vkDestroyInstance(m_instance, nullptr);
 }
 void Core::createInstance(SDL_Window *window)
@@ -58,15 +55,17 @@ void Core::createInstance(SDL_Window *window)
     appInfo.engineVersion      = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion         = VK_API_VERSION_1_2;
 
-    unsigned int extensionCount = 0;
-    SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, nullptr);
-    std::vector<const char *> extensions(extensionCount);
-    if (!SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, extensions.data()))
-    {
-        std::cerr << "Failed to get Vulkan instance extensions: " << SDL_GetError() << std::endl;
-        extensions.clear();
-        return;
+    uint32_t extCount = 0;
+    const char* const* sdlExts = SDL_Vulkan_GetInstanceExtensions(&extCount);
+    
+    if (!sdlExts)
+        throw std::runtime_error("SDL_Vulkan_GetInstanceExtensions returned null");
+    std::vector<const char*> extensions(sdlExts, sdlExts + extCount);
+    
+    if(extensions.empty()){
+        throw std::runtime_error("Failed to get SDL Vulkan extensions");
     }
+
     if (enableValidationLayers)
     {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -190,7 +189,7 @@ void Core::createLogicalDevice()
 
 void Core::createSurface(SDL_Window *window)
 {
-    if (!SDL_Vulkan_CreateSurface(window, m_instance, &m_surface))
+    if (!SDL_Vulkan_CreateSurface(window, m_instance, nullptr, &m_surface))
     {
         std::cerr << "Failed to create Vulkan surface: " << SDL_GetError() << std::endl;
     }

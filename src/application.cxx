@@ -1,9 +1,9 @@
 #include "headers/application.hxx"
 #include "headers/scene.hxx"
 
-#define SDL_MAIN_HANDLED
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_vulkan.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_vulkan.h>
+
 #include <vulkan/vulkan.h>
 #include <iostream>
 
@@ -45,17 +45,18 @@ Application::~Application()
 
 void Application::initializeSDL(const std::string &title)
 {
-    SDL_SetMainReady();
-    if (SDL_Init(SDL_INIT_VIDEO) < 0)
+    if (!SDL_Init(SDL_INIT_VIDEO))
     {
-        throw std::runtime_error(std::string("Failed to initialize SDL2: ") + SDL_GetError());
+        throw std::runtime_error(std::string("Failed to initialize SDL3: ") + SDL_GetError());
     }
+
+    if (!SDL_Vulkan_LoadLibrary(nullptr))
+        throw std::runtime_error(std::string("Failed to load Vulkan: ") + SDL_GetError());
 
     m_window = SDL_CreateWindow(
         title.c_str(),
-        100, 100,
         m_width, m_height,
-        SDL_WINDOW_VULKAN | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+        SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
 
     if (!m_window)
     {
@@ -86,6 +87,7 @@ void Application::initializeVulkan()
 
     m_globalDescriptor  = std::make_unique<GlobalDescriptor>(*m_core, MAX_FRAMES_IN_FLIGHT, *m_shadowMap);
     MaterialDescriptor::createLayout(m_core->getDevice());
+    std::cout << "material descriptor created" << std::endl;
 
     PipelineConfig pipelineConfig{
         .core                  = *m_core,
@@ -128,6 +130,7 @@ void Application::shutdownSDL()
         SDL_DestroyWindow(m_window);
         m_window = nullptr;
     }
+    SDL_Vulkan_UnloadLibrary();
     SDL_Quit();
 }
 
@@ -149,13 +152,13 @@ void Application::shutdownVulkan()
 
 void Application::run(Scene &scene)
 {
-    uint64_t lastTicks = SDL_GetTicks64();
+    uint64_t lastTicks = SDL_GetTicks();
     float    deltaTime = 0.0f;
     bool     running   = true;
 
     while (running)
     {
-        const uint64_t now = SDL_GetTicks64();
+        const uint64_t now = SDL_GetTicks();
         deltaTime = static_cast<float>(now - lastTicks) / 1000.0f;
         lastTicks = now;
 
@@ -187,44 +190,39 @@ bool Application::pollEvents()
     {
         switch (event.type)
         {
-        case SDL_QUIT:
+        case SDL_EVENT_QUIT:
             std::cout << "Quit event received, exiting main loop." << std::endl;
             return false;
 
-        case SDL_WINDOWEVENT:
-            switch (event.window.event)
+        case SDL_EVENT_WINDOW_RESIZED:
             {
-            case SDL_WINDOWEVENT_RESIZED:
                 m_width = event.window.data1;
                 m_height = event.window.data2;
                 m_windowResized = true;
                 std::cout << "Window resized to: " << m_width << "x" << m_height << std::endl;
-                break;
-            default: break;
             }
             break;
 
-        case SDL_KEYDOWN:
-            switch (event.key.keysym.sym)
+        case SDL_EVENT_KEY_DOWN:
+            switch (event.key.key)
             {
             case SDLK_ESCAPE:
                 return false;
             case SDLK_TAB:
             {
-                SDL_bool current = SDL_GetRelativeMouseMode();
-                SDL_SetRelativeMouseMode(current ? SDL_FALSE : SDL_TRUE);
+                SDL_SetWindowRelativeMouseMode(m_window, !SDL_GetWindowRelativeMouseMode(m_window));
                 break;
             }
             default: break;
             }
             break;
-        case SDL_MOUSEMOTION:
+        case SDL_EVENT_MOUSE_MOTION:
             {
                 // Get mouse motion
-                if (SDL_GetRelativeMouseMode())
+                if (SDL_GetWindowRelativeMouseMode(m_window))
                 {
-                    m_mouseX = event.motion.xrel;
-                    m_mouseY = event.motion.yrel;
+                    m_mouseX = static_cast<int>(event.motion.xrel);
+                    m_mouseY = static_cast<int>(event.motion.yrel);
                 }
             }
 
@@ -236,7 +234,7 @@ bool Application::pollEvents()
 
 void Application::handleInput(Scene &scene, float deltaTime)
 {
-    const Uint8 *keys = SDL_GetKeyboardState(nullptr);
+    const bool *keys = SDL_GetKeyboardState(nullptr);
 
     scene.handleInput(deltaTime, keys, m_mouseX, m_mouseY);
     //

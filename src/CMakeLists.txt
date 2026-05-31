@@ -1,7 +1,3 @@
-# ---------------------------------------------------------------------------
-# src/CMakeLists.txt
-# ---------------------------------------------------------------------------
-
 add_executable(enceladus
     main.cxx
     scene.cxx
@@ -12,12 +8,12 @@ add_executable(enceladus
 target_link_libraries(enceladus
     PRIVATE
         Vulkan::Vulkan
-        SDL2::SDL2
+        SDL3::SDL3
         enceladus_math   # your custom math library
         enceladus_renderer
         enceladus_geometry
         enceladus_physics
-        imgui            # Dear ImGui (Vulkan + SDL2 backends)
+        imgui            # Dear ImGui (Vulkan + SDL3 backends)
 )
 
 target_include_directories(enceladus

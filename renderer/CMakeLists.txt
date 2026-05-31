@@ -25,5 +25,5 @@ target_include_directories(enceladus_renderer
 target_link_libraries(enceladus_renderer
     PUBLIC
         Vulkan::Vulkan
-        SDL2::SDL2
+        SDL3::SDL3
 )

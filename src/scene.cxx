@@ -1,8 +1,6 @@
 #include "headers/scene.hxx"
 #include "headers/camera.hxx"
 
-#include <SDL2/SDL.h>
-
 #include "../geometry/headers/shape.hxx"
 #include "../geometry/headers/cube.hxx"
 #include "../geometry/headers/cubesphere.hxx"
@@ -86,7 +84,7 @@ void Scene::update(float deltaTime, float aspect)
     syncRenderables();
 }
 
-void Scene::handleInput(float deltaTime, const uint8_t *keys, int mouseX, int mouseY)
+void Scene::handleInput(float deltaTime, const bool *keys, int mouseX, int mouseY)
 {
     if (keys)
     {

@@ -1,11 +1,7 @@
 #!/bin/bash
-
-# Build script for Phobos project (Unix/Linux/macOS)
-
-set -e  # Exit on error
+set -e
 
 RUN=false
-
 for args in "$@"; do
     if [ "$args" == "--run" ]; then
         RUN=true
@@ -15,49 +11,37 @@ done
 
 echo "Building Enceladus..."
 
-# Create build directory if it doesn't exist
 if [ ! -d "build" ]; then
     echo "Creating build directory..."
     mkdir build
 fi
 
-# Navigate to build directory
 cd build
 
-# Ensure cmake is available
 if ! command -v cmake >/dev/null 2>&1; then
     echo "Error: cmake not found in PATH."
-    echo "On MSYS2 install it with: pacman -S mingw-w64-x86_64-cmake"
-    echo "and restart your MinGW64 or UCRT64 shell."
+    echo "Install with: pacman -S mingw-w64-ucrt-x86_64-cmake"
     exit 1
 fi
 
-# If we're going to use the Unix Makefiles generator, make sure make (or
-# an equivalent) is on PATH. MSYS2 sometimes installs the program as
-# mingw32-make or mingw64-make instead of plain "make".
+# ---------------------------------------------------------------------------
+# Pick a make command (MSYS2 sometimes names it mingw32-make)
+# ---------------------------------------------------------------------------
 MAKE_CMD=""
 if [ -n "$MSYSTEM" ]; then
-    # only check for make when we're in an MSYS2-derived environment
-    if echo "$MSYSTEM" | grep -Ei "mingw|ucrt" >/dev/null 2>&1; then
-        if command -v make >/dev/null 2>&1; then
-            MAKE_CMD=make
-        elif command -v mingw32-make >/dev/null 2>&1; then
-            MAKE_CMD=mingw32-make
-        elif command -v mingw64-make >/dev/null 2>&1; then
-            MAKE_CMD=mingw64-make
-        else
-            echo "Error: make not found in PATH (searched for make, mingw32-make, mingw64-make)."
-            echo "Install it with: pacman -S mingw-w64-x86_64-make"
-            echo "and restart your shell."
-            exit 1
-        fi
+    if command -v make >/dev/null 2>&1; then
+        MAKE_CMD=make
+    elif command -v mingw32-make >/dev/null 2>&1; then
+        MAKE_CMD=mingw32-make
+    else
+        echo "Error: make not found. Install with: pacman -S mingw-w64-ucrt-x86_64-make"
+        exit 1
     fi
 fi
 
-
-# Configure with CMake
-# in MSYS2 we explicitly pick the Unix Makefiles generator to avoid
-# accidentally using MSVC when cl.exe is on PATH
+# ---------------------------------------------------------------------------
+# CMake generator
+# ---------------------------------------------------------------------------
 GEN_ARGS=()
 if [ -n "$MSYSTEM" ]; then
     case "$MSYSTEM" in
@@ -70,27 +54,19 @@ if [ -n "$MSYSTEM" ]; then
 fi
 
 echo "Configuring CMake..."
-# If MAKE_CMD was chosen above, pass it explicitly so CMake can find the
-# make program even if it's named mingw32-make.
 if [ -n "$MAKE_CMD" ]; then
-    cmake "${GEN_ARGS[@]}" -DCMAKE_MAKE_PROGRAM=$MAKE_CMD ..
+    cmake "${GEN_ARGS[@]}" -DCMAKE_MAKE_PROGRAM="$MAKE_CMD" ..
 else
     cmake "${GEN_ARGS[@]}" ..
 fi
 
-# Build the project
 echo "Building project..."
 cmake --build .
 
-# Compile shaders if glslc is available
-if [ -f "/c/VulkanSDK/1.4.321.1/Bin/glslc.exe" ]; then
-    echo "Compiling shaders..."
-    mkdir -p shaders
-    "/c/VulkanSDK/1.4.321.1/Bin/glslc.exe" ../shaders/shader.vert -o shaders/shader.vert.spv
-    "/c/VulkanSDK/1.4.321.1/Bin/glslc.exe" ../shaders/shader.frag -o shaders/shader.frag.spv
-    "/c/VulkanSDK/1.4.321.1/Bin/glslc.exe" ../shaders/shadow.vert -o shaders/shadow.vert.spv
-    echo "Shaders compiled to build/shaders/"
-elif ! command --version glslc >/dev/null 2>&1; then
+# ---------------------------------------------------------------------------
+# Compile shaders — use glslc from MSYS2/UCRT64 or whatever is on PATH
+# ---------------------------------------------------------------------------
+if command -v glslc >/dev/null 2>&1; then
     echo "Compiling shaders..."
     mkdir -p shaders
     glslc ../shaders/shader.vert -o shaders/shader.vert.spv
@@ -98,13 +74,11 @@ elif ! command --version glslc >/dev/null 2>&1; then
     glslc ../shaders/shadow.vert -o shaders/shadow.vert.spv
     echo "Shaders compiled to build/shaders/"
 else
-    echo "glslc not found!"
+    echo "Warning: glslc not found, shaders not compiled."
+    echo "Install with: pacman -S mingw-w64-ucrt-x86_64-shaderc"
 fi
 
-# Return to project root
 cd ..
-
-#echo "Build complete! Run with: ./build/src/enceladus"
 
 if [ "$RUN" = true ]; then
     echo "Running Enceladus..."

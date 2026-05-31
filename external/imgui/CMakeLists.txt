@@ -16,7 +16,7 @@
 #     imstb_truetype.h
 #   Backends:
 #     backends/imgui_impl_vulkan.cpp / .h
-#     backends/imgui_impl_sdl2.cpp  / .h
+#     backends/imgui_impl_sdl3.cpp  / .h
 # ---------------------------------------------------------------------------
 
 add_library(imgui STATIC
@@ -29,24 +29,23 @@ add_library(imgui STATIC
 
     # Backends
     imgui_impl_vulkan.cpp
-    imgui_impl_sdl2.cpp
+    imgui_impl_sdl3.cpp
 )
 
 # imgui needs to find its own headers and the backends subfolder
 target_include_directories(imgui
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}           # imgui.h, imconfig.h, etc.
-        ${CMAKE_CURRENT_SOURCE_DIR}/backends  # imgui_impl_vulkan.h, imgui_impl_sdl2.h
 )
 
-# imgui's Vulkan backend needs the Vulkan headers; SDL2 backend needs SDL2.
+# imgui's Vulkan backend needs the Vulkan headers; SDL3 backend needs SDL3.
 # PRIVATE here because consumers of the imgui target don't need to see
-# Vulkan/SDL2 headers just because they link imgui — they pull those in
+# Vulkan/SDL3 headers just because they link imgui — they pull those in
 # themselves via their own target_link_libraries.
 target_link_libraries(imgui
     PRIVATE
         Vulkan::Vulkan
-        SDL2::SDL2
+        SDL3::SDL3
 )
 
 target_compile_features(imgui PUBLIC cxx_std_17)
