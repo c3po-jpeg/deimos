@@ -53,11 +53,12 @@ void resolveCollision(Contact &contact)
     RigidBody *bodyB = contact.bodyB;     
 
     const float totalInverseMass = bodyA->inverseMass() + bodyB->inverseMass();
+    const float e = bodyA->restitution * bodyB->restitution; // combined restitution
 
     const Vector3f n = contact.normal;
 
     const Vector3f vab = bodyB->velocity - bodyA->velocity;
-    const float impulseJ = -2.0 * dot(vab, n) / totalInverseMass;
+    const float impulseJ = -(1.0f + e) * dot(vab, n) / totalInverseMass;
     const Vector3f impulse = impulseJ * n;
 
     bodyA->applyLinearImpulse(-1.0*impulse);

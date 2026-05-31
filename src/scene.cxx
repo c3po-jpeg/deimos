@@ -55,8 +55,8 @@ void Scene::addCubeSphere(float x, float y, float z, float radius, int subDivisi
     if(isStatic){
         sphereBody.makeStatic();
     } else{
-        /* sphereBody.restitution = 0.8f;
-        sphereBody.friction    = 0.5f; */
+        sphereBody.restitution = 0.8f;
+        //sphereBody.friction    = 0.5f;
         sphereBody.mass        = mass;
     }
     
