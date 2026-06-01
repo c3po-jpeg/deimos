@@ -17,6 +17,7 @@ struct RigidBody
 
     Transform transform;
     Vector3f  velocity;
+    Vector3f  angularVelocity;
     Vector3f  rotation;
 
     std::unique_ptr<Collider> collider;
@@ -28,8 +29,13 @@ struct RigidBody
     Vector3f LocalToWorld(const Vector3f &point) const;
 
     void applyLinearImpulse(const Vector3f &impulse);
+    void applyAngularImpulse(const Vector3f &impulse);
+    void applyImpulseAtPoint(const Vector3f &impulse, const Vector3f &contactPoint);
 
-    Mat3x3 getWorldInvIntertiaTensor() const;
+    Mat3x3 getLocalInvInertiaTensor() const;
+    Mat3x3 getWorldInvInertiaTensor() const;
+
+    void update(float dt);
 
     Vector3f position() const
     {
@@ -49,11 +55,6 @@ struct RigidBody
     void rotate(const Quat &delta)
     {
         transform.orientation = delta * transform.orientation;
-    }
-
-    const Mat3x3 getInverseInertiaTensor() const
-    {
-        return collider->inertiaTensor().inverse();
     }
 
     bool isStatic() const
