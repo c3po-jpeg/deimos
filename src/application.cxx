@@ -138,7 +138,10 @@ void Application::shutdownVulkan()
 {
     // Destroy command buffers FIRST (they reference other resources)
     m_renderer.reset();
-    MaterialDescriptor::destroyLayout(m_core->getDevice());
+    if (m_core)
+    {
+        MaterialDescriptor::destroyLayout(m_core->getDevice());
+    }
     // Then destroy the resources they were referencing
     m_pipeline.reset();
     m_wireframePipeline.reset();
@@ -196,7 +199,7 @@ bool Application::pollEvents()
 
         case SDL_EVENT_WINDOW_RESIZED:
             {
-                m_width = event.window.data1;
+                m_width  = event.window.data1;
                 m_height = event.window.data2;
                 m_windowResized = true;
                 std::cout << "Window resized to: " << m_width << "x" << m_height << std::endl;

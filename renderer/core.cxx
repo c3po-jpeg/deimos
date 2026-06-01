@@ -1,8 +1,14 @@
-#ifdef NDEBUG
+
+// TODO: fix this later
+
+/* #ifdef NDEBUG
 const bool enableValidationLayers = false;
 #else
 const bool enableValidationLayers = true;
-#endif
+#endif 
+*/
+
+const bool enableValidationLayers = false;
 
 #include "headers/core.hxx"
 #include "headers/constants.hxx"
@@ -29,12 +35,28 @@ void Core::initVulkan(SDL_Window *window)
 }
 Core::~Core()
 {
-    vkDestroyCommandPool(m_device, m_commandPool, nullptr);
-    vkDestroyDevice(m_device, nullptr);          
-    vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
-    if (enableValidationLayers)
+    if (m_device != VK_NULL_HANDLE && m_commandPool != VK_NULL_HANDLE)
+    {
+        vkDestroyCommandPool(m_device, m_commandPool, nullptr);
+    }
+
+    if (m_device != VK_NULL_HANDLE)
+    {
+        vkDestroyDevice(m_device, nullptr);
+    }
+
+    if (m_instance != VK_NULL_HANDLE && m_surface != VK_NULL_HANDLE)
+    {
+        vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
+    }
+    if (enableValidationLayers && m_instance != VK_NULL_HANDLE && m_debugMessenger != VK_NULL_HANDLE)
+    {
         DestroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, nullptr);
-    vkDestroyInstance(m_instance, nullptr);
+    }
+    if (m_instance != VK_NULL_HANDLE)
+    {
+        vkDestroyInstance(m_instance, nullptr);
+    }
 }
 void Core::createInstance(SDL_Window *window)
 {
@@ -95,7 +117,7 @@ void Core::createInstance(SDL_Window *window)
 
     if (vkCreateInstance(&createInfo, nullptr, &m_instance) != VK_SUCCESS)
     {
-        std::cerr << "Failed to create Vulkan instance" << std::endl;
+        throw std::runtime_error("Failed to create Vulkan instance");
     }
 }
 
@@ -191,7 +213,7 @@ void Core::createSurface(SDL_Window *window)
 {
     if (!SDL_Vulkan_CreateSurface(window, m_instance, nullptr, &m_surface))
     {
-        std::cerr << "Failed to create Vulkan surface: " << SDL_GetError() << std::endl;
+        throw std::runtime_error(std::string("Failed to create Vulkan surface: ") + SDL_GetError());
     }
 }
 
