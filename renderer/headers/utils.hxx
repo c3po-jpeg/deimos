@@ -1,10 +1,10 @@
 #ifndef UTILS_HXX
 #define UTILS_HXX
 
+#include <SDL3/SDL.h>
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <set>
-#include <SDL2/SDL.h>
 #include <iostream>
 #include <optional> 
 

@@ -5,7 +5,7 @@ Vector3f RigidBody::getCenterOfMassLocal() const
     return collider->centerOfMass();
 }
 
-Vector3f RigidBody::getCenterOfMassWorld() const 
+Vector3f RigidBody::getCenterOfMassWorld() const
 {
     const Vector3f localCOM = getCenterOfMassLocal();
     return position() + orientation() * localCOM;
@@ -44,7 +44,7 @@ void RigidBody::applyAngularImpulse(const Vector3f &impulse)
 {
     if (isStatic())
         return;
-    
+
     angularVelocity += getWorldInvInertiaTensor() * impulse;
 
     if (angularVelocity.magSqrd() > MAX_ANG_VEL * MAX_ANG_VEL)
@@ -53,9 +53,9 @@ void RigidBody::applyAngularImpulse(const Vector3f &impulse)
     }
 }
 
-void RigidBody::applyImpulseAtPoint(const Vector3f &impulse, const Vector3f & contactPoint)
+void RigidBody::applyImpulseAtPoint(const Vector3f &impulse, const Vector3f &contactPoint)
 {
-    if(isStatic())
+    if (isStatic())
         return;
 
     applyLinearImpulse(impulse);
@@ -76,4 +76,16 @@ void RigidBody::update(float dt)
 
     Vector3f centerOfMass = getCenterOfMassWorld();
     Vector3f cmToPosition = position() - centerOfMass;
+
+    Mat3x3 r = orientation().toMat3x3();
+    Mat3x3 inertiaTensor = r * collider->inertiaTensor() * r.transpose();
+    Vector3f alpha = inertiaTensor.inverse() * cross(angularVelocity, inertiaTensor * angularVelocity);
+    angularVelocity += alpha * dt;
+
+    Vector3f dAngle = angularVelocity * dt;
+    Quat dq = Quat(dAngle.mag(), dAngle.unit());
+    rotate(dq);
+    transform.orientation = transform.orientation.unit();
+
+    transform.translation += centerOfMass + dq * cmToPosition;
 }
