@@ -65,15 +65,41 @@ void resolveCollision(Contact &contact)
     const Vector3f ra = ptOnA - bodyA->getCenterOfMassWorld();
     const Vector3f rb = ptOnB - bodyB->getCenterOfMassWorld();
 
+    // Calculate the angular part of the impulse denominator
     const Vector3f angularJA = cross(invWorldInertiaA * cross(ra, n), ra);
     const Vector3f angularJB = cross(invWorldInertiaB * cross(rb, n), rb);
+    const float angularFactor = dot(angularJA + angularJB, n);
 
-    const Vector3f vab = bodyB->velocity - bodyA->velocity;
-    const float impulseJ = -(1.0f + e) * dot(vab, n) / totalInverseMass;
+    const Vector3f va = bodyA->velocity + cross(bodyA->angularVelocity, ra);
+    const Vector3f vb = bodyB->velocity + cross(bodyB->angularVelocity, rb);
+    const Vector3f vab = va - vb;
+    const float impulseJ = (1.0f + e) * dot(vab, n) / (totalInverseMass + angularFactor);
     const Vector3f impulse = impulseJ * n;
 
-    bodyA->applyLinearImpulse(-1.0*impulse);
-    bodyB->applyLinearImpulse( 1.0*impulse);
+    bodyA->applyImpulseAtPoint(-1.0 * impulse, ptOnA);
+    bodyB->applyImpulseAtPoint( 1.0 * impulse, ptOnB);
+
+    // friction part
+    const float friction = bodyA->friction * bodyB->friction; // combined friction
+    const Vector3f va2 = bodyA->velocity + cross(bodyA->angularVelocity, ra);
+    const Vector3f vb2 = bodyB->velocity + cross(bodyB->angularVelocity, rb);
+    const Vector3f vab2 = va2 - vb2;
+
+    const Vector3f velNorm = n * dot(n, vab);
+    const Vector3f velTang = vab2 - velNorm;
+    Vector3f relativeTangent = velTang.unit();
+
+    const Vector3f inertiaA = cross(invWorldInertiaA * cross(ra, relativeTangent), ra);
+    const Vector3f inertiaB = cross(invWorldInertiaB * cross(rb, relativeTangent), rb);
+    const float frictionDenominator = dot(inertiaA + inertiaB, relativeTangent);
+
+    const float reducedMass = 1.0f / (totalInverseMass + frictionDenominator);
+    const Vector3f impulseFric = velTang * friction * -reducedMass;
+
+    bodyA->applyImpulseAtPoint( 1.0f * impulseFric, ptOnA);
+    bodyB->applyImpulseAtPoint(-1.0f * impulseFric, ptOnB);
+
+    // move objects out of each other
 
     const float ta = bodyA->inverseMass() / totalInverseMass;
     const float tb = bodyB->inverseMass() / totalInverseMass;

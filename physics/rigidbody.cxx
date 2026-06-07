@@ -21,14 +21,6 @@ Vector3f RigidBody::LocalToWorld(const Vector3f &point) const
     return getCenterOfMassWorld() + orientation() * point;
 }
 
-void RigidBody::applyLinearImpulse(const Vector3f &impulse)
-{
-    if (!isStatic())
-    {
-        velocity += impulse * inverseMass();
-    }
-}
-
 Mat3x3 RigidBody::getLocalInvInertiaTensor() const
 {
     return collider->inertiaTensor().inverse() * inverseMass();
@@ -40,11 +32,13 @@ Mat3x3 RigidBody::getWorldInvInertiaTensor() const
     return r * getLocalInvInertiaTensor() * r.transpose();
 }
 
+void RigidBody::applyLinearImpulse(const Vector3f &impulse)
+{
+    velocity += impulse * inverseMass();
+}
+
 void RigidBody::applyAngularImpulse(const Vector3f &impulse)
 {
-    if (isStatic())
-        return;
-
     angularVelocity += getWorldInvInertiaTensor() * impulse;
 
     if (angularVelocity.magSqrd() > MAX_ANG_VEL * MAX_ANG_VEL)
@@ -55,9 +49,6 @@ void RigidBody::applyAngularImpulse(const Vector3f &impulse)
 
 void RigidBody::applyImpulseAtPoint(const Vector3f &impulse, const Vector3f &contactPoint)
 {
-    if (isStatic())
-        return;
-
     applyLinearImpulse(impulse);
 
     Vector3f pos = getCenterOfMassWorld();
@@ -69,10 +60,7 @@ void RigidBody::applyImpulseAtPoint(const Vector3f &impulse, const Vector3f &con
 
 void RigidBody::update(float dt)
 {
-    if (isStatic())
-        return;
-
-    translate(velocity * dt);
+    transform.translation += velocity * dt;
 
     Vector3f centerOfMass = getCenterOfMassWorld();
     Vector3f cmToPosition = position() - centerOfMass;
@@ -83,9 +71,9 @@ void RigidBody::update(float dt)
     angularVelocity += alpha * dt;
 
     Vector3f dAngle = angularVelocity * dt;
-    Quat dq = Quat(dAngle.mag(), dAngle.unit());
-    rotate(dq);
-    transform.orientation = transform.orientation.unit();
+    float angle = dAngle.mag();
+    Quat dq = (angle > 1e-8f) ? Quat(to_degrees(angle), dAngle) : Quat();
 
-    transform.translation += centerOfMass + dq * cmToPosition;
+    transform.orientation = (dq * transform.orientation).unit();
+    transform.translation = centerOfMass + dq * cmToPosition;
 }

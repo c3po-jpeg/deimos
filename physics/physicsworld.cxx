@@ -13,7 +13,7 @@ void PhysicsWorld::integrate(float dt)
         if (!body->isStatic())
         {
             body->applyLinearImpulse(m_gravity * body->mass * dt);
-            body->translate(body->velocity * dt);
+            body->update(dt);
         }
     }
 }
