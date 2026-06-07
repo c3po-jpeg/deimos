@@ -2,9 +2,9 @@
 
 Mat4x4 Transform::toMat4x4() const
 {
-  Vector3f x = orientation * Vector3f(1.0, 0.0, 0.0);
-  Vector3f y = orientation * Vector3f(0.0, 1.0, 0.0);
-  Vector3f z = orientation * Vector3f(0.0, 0.0, 1.0);
+  Vector3f x = orientation.rotatePoint(Vector3f(1.0, 0.0, 0.0));
+  Vector3f y = orientation.rotatePoint(Vector3f(0.0, 1.0, 0.0));
+  Vector3f z = orientation.rotatePoint(Vector3f(0.0, 0.0, 1.0));
 
   x = x * scaling.x;
   y = y * scaling.y;
@@ -31,7 +31,7 @@ Transform Transform::inverse() const
   inv.scaling.z = 1.0 / scaling.z;
 
   Vector3f inv_trans = -1.0 * translation;
-  inv.translation    = inv.orientation * (inv.scaling * inv_trans);
+  inv.translation    = inv.orientation.rotatePoint(inv.scaling * inv_trans);
 
   return inv;
 }
@@ -44,7 +44,7 @@ Transform Transform::combine(const Transform &t1, const Transform &t2)
 
   result.orientation = t1.orientation * t2.orientation;
   // mhhhh have no idea what this is
-  result.translation = t1.orientation * (t1.scaling * t2.translation);
+  result.translation = t1.orientation.rotatePoint(t1.scaling * t2.translation);
 
   result.translation = t1.translation + result.translation;
 

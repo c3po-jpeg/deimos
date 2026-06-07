@@ -11,17 +11,31 @@
 #include "headers/vec3.hxx"
 #include <cmath>
 
-Quat::Quat(float angle, Vector3f axis)
-{
+Quat Quat::fromDegrees(float angle, Vector3f axis) 
+{ 
   float s = std::sin(to_radians(angle / 2.0));
   float c = std::cos(to_radians(angle / 2.0));
 
   Vector3f unit = axis.unit();
+  Quat result;
+  result.s = c;
+  result.x = unit.x * s;
+  result.y = unit.y * s;
+  result.z = unit.z * s;
+  return result;
+}
 
-  this->s = c;
-  this->x = unit.x * s;
-  this->y = unit.y * s;
-  this->z = unit.z * s;
+Quat Quat::fromRadians(float angle, Vector3f axis) 
+{ float s = std::sin(angle / 2.0);
+  float c = std::cos(angle / 2.0);
+
+  Vector3f unit = axis.unit();
+  Quat result;
+  result.s = c;
+  result.x = unit.x * s;
+  result.y = unit.y * s;
+  result.z = unit.z * s;
+  return result;
 }
 
 float Quat::norm() const
@@ -97,6 +111,16 @@ Mat4x4 Quat::toMat4x4() const
 
   return result;
 }
+
+Vector3f Quat::rotatePoint(const Vector3f &point) const
+{
+  // Rotate the point using the quaternion rotation formula
+  Vector3f a = axis(*this) * 2.0 * dot(axis(*this), point);
+  Vector3f b = point * (s * s - dot(axis(*this), axis(*this)));
+  Vector3f c = cross(axis(*this), point) * 2.0 * s;
+
+  return a + b + c;
+}
 // operator overloads
 //________________________________________________________________________
 //________________________________________________________________________
@@ -118,18 +142,8 @@ Quat operator*(float lhs, const Quat &rhs)
       lhs * rhs.z,
       lhs * rhs.s);
 }
+
 Quat operator*(const Quat lhs, float &rhs) { return rhs * lhs; }
-
-Vector3f operator*(const Quat &lhs, const Vector3f &rhs)
-{
-  Vector3f a = axis(lhs) * 2.0 * dot(axis(lhs), rhs);
-  Vector3f b = rhs * (lhs.s * lhs.s - dot(axis(lhs), axis(lhs)));
-  Vector3f c = cross(axis(lhs), rhs) * 2.0 * lhs.s;
-
-  return a + b + c;
-}
-
-Vector3f operator*(Vector3f &lhs, Quat &rhs) { return rhs * lhs; }
 
 Quat operator*(const Quat &lhs, const Quat &rhs)
 {

@@ -8,17 +8,17 @@ Vector3f RigidBody::getCenterOfMassLocal() const
 Vector3f RigidBody::getCenterOfMassWorld() const
 {
     const Vector3f localCOM = getCenterOfMassLocal();
-    return position() + orientation() * localCOM;
+    return position() + orientation().rotatePoint(localCOM);
 }
 
 Vector3f RigidBody::WorldToLocal(const Vector3f &point) const
 {
-    return orientation().inverse() * (point - getCenterOfMassWorld());
+    return orientation().inverse().rotatePoint(point - getCenterOfMassWorld());
 }
 
 Vector3f RigidBody::LocalToWorld(const Vector3f &point) const
 {
-    return getCenterOfMassWorld() + orientation() * point;
+    return getCenterOfMassWorld() + orientation().rotatePoint(point);
 }
 
 Mat3x3 RigidBody::getLocalInvInertiaTensor() const
@@ -72,8 +72,8 @@ void RigidBody::update(float dt)
 
     Vector3f dAngle = angularVelocity * dt;
     float angle = dAngle.mag();
-    Quat dq = (angle > 1e-8f) ? Quat(to_degrees(angle), dAngle) : Quat();
+    Quat dq = (angle > 1e-8f) ? Quat::fromRadians(angle, dAngle) : Quat();
 
     transform.orientation = (dq * transform.orientation).unit();
-    transform.translation = centerOfMass + dq * cmToPosition;
+    transform.translation = centerOfMass + dq.rotatePoint(cmToPosition);
 }

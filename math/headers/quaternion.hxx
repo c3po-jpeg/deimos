@@ -25,6 +25,7 @@ struct Quat
     float v[4];
   };
 
+  //default identity quaternion
   Quat() : x(0.0), y(0.0), z(0.0), s(1.0) {}
   Quat(float v) : x(v), y(v), z(v), s(v) {}
   Quat(float _x, float _y, float _z, float _s) : x(_x), y(_y), z(_z), s(_s) {}
@@ -32,7 +33,11 @@ struct Quat
   /// @brief creates a quaternion from an angle and specified axis
   /// @param 1: angle
   /// @param 2: axis
-  Quat(float, Vector3f);
+  static Quat fromDegrees(float angle, Vector3f axis);
+  /// @brief creates a quaternion from an angle and specified axis
+  /// @param 1: angle
+  /// @param 2: axis
+  static Quat fromRadians(float angle, Vector3f axis);
 
   float norm() const;
   Quat  unit() const;
@@ -43,6 +48,7 @@ struct Quat
 
   Mat3x3 toMat3x3() const;
   Mat4x4 toMat4x4() const;
+  Vector3f rotatePoint(const Vector3f &point) const;
 };
 Vector3f axis(Quat q);
 float dot(const Quat &lhs, const Quat &rhs);
@@ -52,9 +58,6 @@ Quat operator+(const Quat &lhs, const Quat &rhs);
 
 Quat operator*(float lhs, const Quat &rhs);
 Quat operator*(const Quat lhs, float &rhs);
-
-Vector3f operator*(const Vector3f &lhs, const Quat &rhs);
-Vector3f operator*(const Quat &lhs, const Vector3f &rhs);
 
 Quat operator*(const Quat &lhs, const Quat &rhs);
 
