@@ -1,10 +1,7 @@
 #include "headers/pipeline.hxx"
 #include "headers/core.hxx"
 
-#include <fstream>
 #include <vector>
-#include <string>
-#include <iostream>
 
 Pipeline::Pipeline(PipelineConfig &config)
     : m_core(config.core)
@@ -103,13 +100,13 @@ Pipeline::Pipeline(PipelineConfig &config)
         rasterizer.frontFace       = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         rasterizer.depthBiasEnable = VK_FALSE;
     }
-    
+
 
     VkPipelineMultisampleStateCreateInfo multisampling{};
     multisampling.sType                 = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampling.sampleShadingEnable   = VK_FALSE;
     multisampling.rasterizationSamples  = VK_SAMPLE_COUNT_1_BIT;
-    
+
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment{};
     colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;

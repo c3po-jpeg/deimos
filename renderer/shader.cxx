@@ -1,7 +1,6 @@
 #include "headers/shader.hxx"
 #include "headers/core.hxx"
 #include "headers/utils.hxx"
-#include <fstream>
 
 Shader::Shader(Core &core, const char *filepath)
     : m_core(core)

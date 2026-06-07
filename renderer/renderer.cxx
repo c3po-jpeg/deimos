@@ -1,7 +1,6 @@
 #include "headers/renderer.hxx"
 #include "headers/core.hxx"
 #include "headers/pipeline.hxx"
-#include "headers/utils.hxx"
 #include "headers/drawable.hxx"
 #include "headers/descriptors.hxx"
 #include "headers/ubo.hxx"
@@ -9,7 +8,6 @@
 #include <cstddef>
 #include <stdexcept>
 #include <array>
-#include <iostream>
 
 Renderer::Renderer(RendererConfig &config)
     : m_core(config.core),

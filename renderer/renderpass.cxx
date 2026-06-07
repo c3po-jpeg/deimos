@@ -1,7 +1,6 @@
 #include "headers/renderpass.hxx"
 #include "headers/core.hxx"
 #include <stdexcept>
-#include <iostream>
 #include <array>
 
 RenderPass::RenderPass(Core &core, VkFormat colorFormat, VkFormat depthFormat)
