@@ -6,6 +6,7 @@
 #include "headers/descriptors.hxx"
 #include "headers/ubo.hxx"
 
+#include <cstddef>
 #include <stdexcept>
 #include <array>
 #include <iostream>
@@ -20,7 +21,7 @@ Renderer::Renderer(RendererConfig &config)
     createFramebuffers(config.renderPass, config.swapChainExtent, config.swapChainImageViews, config.depthImageView);
     createCommandPool(m_core.getGraphicsFamilyIndex());
     createCommandBuffers();
-    createSyncObjects();
+    createSyncObjects(config.swapChainImageViews.size());
 }
 Renderer::~Renderer()
 {
@@ -29,8 +30,12 @@ Renderer::~Renderer()
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
     {
         vkDestroySemaphore(device, m_imageAvailableSemaphores[i], nullptr);
-        vkDestroySemaphore(device, m_renderFinishedSemaphores[i], nullptr);
         vkDestroyFence(device, m_inFlightFences[i], nullptr);
+    }
+
+    for(size_t i = 0; i < m_framebuffers.size(); ++i)
+    {
+        vkDestroySemaphore(device, m_renderFinishedSemaphores[i], nullptr);
     }
 
     vkDestroyCommandPool(device, m_commandPool, nullptr);
@@ -67,7 +72,7 @@ void Renderer::beginRecording()
     if (vkBeginCommandBuffer(cmd, &beginInfo) != VK_SUCCESS)
         throw std::runtime_error("Renderer: vkBeginCommandBuffer failed!");
 
-    
+
 }
 void Renderer::beginRenderPass(VkRenderPass renderpass, uint32_t index, VkExtent2D extent)
 {
@@ -177,10 +182,9 @@ void Renderer::endRecording()
 
 void Renderer::presentFrame(VkSwapchainKHR swapchain, uint32_t imageIndex)
 {
-
     VkSemaphore          waitSemaphores[]   = {m_imageAvailableSemaphores[m_currentFrame]};
     VkPipelineStageFlags waitStages[]       = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    VkSemaphore          signalSemaphores[] = {m_renderFinishedSemaphores[m_currentFrame]};
+    VkSemaphore          signalSemaphores[] = {m_renderFinishedSemaphores[imageIndex]};
     VkCommandBuffer      cmd                = m_commandBuffers[m_currentFrame];
 
     VkSubmitInfo submitInfo{};
@@ -223,7 +227,7 @@ void Renderer::createFramebuffers(VkRenderPass renderPass, VkExtent2D extent, co
         //   1 = depth  (one shared image for all framebuffers -- only one
         //               frame is in flight per framebuffer at a time)
         std::array<VkImageView, 2> attachments = {imageViews[i], depthView};
-        
+
         VkFramebufferCreateInfo fbInfo{};
         fbInfo.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         fbInfo.renderPass      = renderPass;
@@ -248,7 +252,7 @@ void Renderer::createCommandPool(uint32_t graphicsQueueFamilyIndex)
 
     if (vkCreateCommandPool(m_core.getDevice(), &poolInfo, nullptr, &m_commandPool) != VK_SUCCESS)
         throw std::runtime_error("Renderer: vkCreateCommandPool failed!");
-    
+
 }
 
 void Renderer::createCommandBuffers()
@@ -265,10 +269,10 @@ void Renderer::createCommandBuffers()
         throw std::runtime_error("Renderer: vkAllocateCommandBuffers failed!");
 }
 
-void Renderer::createSyncObjects()
+void Renderer::createSyncObjects(size_t imageCount)
 {
     m_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-    m_renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    m_renderFinishedSemaphores.resize(imageCount);
     m_inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
 
     VkSemaphoreCreateInfo semaphoreInfo{};
@@ -283,8 +287,15 @@ void Renderer::createSyncObjects()
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
     {
         if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]) != VK_SUCCESS ||
-            vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS ||
             vkCreateFence(device, &fenceInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS)
+        {
+            throw std::runtime_error("Renderer: failed to create sync objects!");
+        }
+    }
+
+    for (size_t i = 0; i < imageCount; ++i)
+    {
+        if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS)
         {
             throw std::runtime_error("Renderer: failed to create sync objects!");
         }

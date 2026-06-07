@@ -47,7 +47,7 @@ private:
 
     void createCommandPool(uint32_t graphicsQueueFamilyIndex);
     void createCommandBuffers();
-    void createSyncObjects();
+    void createSyncObjects(size_t imageCount);
 
 public:
     explicit Renderer(RendererConfig &config);
@@ -100,7 +100,7 @@ public:
     // Submits and presents the current frame.
     void presentFrame(VkSwapchainKHR swapchain, uint32_t imageIndex);
 
-    
+
 };
 
 #endif

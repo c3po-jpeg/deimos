@@ -2,7 +2,7 @@
 #define CAMERA_HXX
 
 #include "../../math/headers/math.hxx"
-#include "ubo.hxx"
+#include "../../renderer/headers/ubo.hxx"
 
 enum class CameraMovement
 {
