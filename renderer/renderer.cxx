@@ -14,7 +14,6 @@
 Renderer::Renderer(RendererConfig &config)
     : m_core(config.core),
       m_globalDescriptor(config.globalDescriptor),
-      //m_materialDescriptor(config.materialDescriptor),
       m_renderPass(config.renderPass)
 
 {

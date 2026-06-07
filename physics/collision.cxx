@@ -53,15 +53,14 @@ void resolveCollision(Contact &contact)
     RigidBody *bodyB = contact.bodyB;  
     
     const Vector3f ptOnA = contact.pointAWorldSpace;
-    const Vector3f ptOnB = contact.pointBLocalSpace;
+    const Vector3f ptOnB = contact.pointBWorldSpace;
 
     const float totalInverseMass = bodyA->inverseMass() + bodyB->inverseMass();
     const float e = bodyA->restitution * bodyB->restitution; // combined restitution
+    const Vector3f n = contact.normal;
 
     const Mat3x3 invWorldInertiaA = bodyA->getWorldInvInertiaTensor();
     const Mat3x3 invWorldInertiaB = bodyB->getWorldInvInertiaTensor();
-
-    const Vector3f n = contact.normal;
 
     const Vector3f ra = ptOnA - bodyA->getCenterOfMassWorld();
     const Vector3f rb = ptOnB - bodyB->getCenterOfMassWorld();
