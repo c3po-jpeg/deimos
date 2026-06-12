@@ -5,31 +5,31 @@
 
 struct Vector2f
 {
-  union
-  {
-    struct
-    {
-      float x;
-      float y;
-    };
+	union
+	{
+		struct
+		{
+			float x;
+			float y;
+		};
 
-    float v[2];
-  };
-  // default constructor
-  Vector2f()
-      : x(0.0), y(0.0) {}
-  // set all components to a single value
-  Vector2f(float _v)
-      : x(_v), y(_v) {}
-  // set values individually
-  Vector2f(float _x, float _y)
-      : x(_x), y(_y) {}
-  // set values using array
-  Vector2f(float *_v)
-      : x(_v[0]), y(_v[1]) {}
+		float v[2];
+	};
+	// default constructor
+	Vector2f()
+		: x(0.0), y(0.0) {}
+	// set all components to a single value
+	Vector2f(float _v)
+		: x(_v), y(_v) {}
+	// set values individually
+	Vector2f(float _x, float _y)
+		: x(_x), y(_y) {}
+	// set values using array
+	Vector2f(float *_v)
+		: x(_v[0]), y(_v[1]) {}
 
-  float length() const;
-  Vector2f unit() const;
+	float length() const;
+	Vector2f normalize() const;
 };
 
 typedef Vector2f Point2f;

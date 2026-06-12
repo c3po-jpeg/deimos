@@ -12,43 +12,43 @@ struct Vector3f;
 
 struct Quat
 {
-  union
-  {
-    struct
-    {
-      float x;
-      float y;
-      float z;
-      float s;
-    };
+	union
+	{
+		struct
+		{
+			float x;
+			float y;
+			float z;
+			float s;
+		};
 
-    float v[4];
-  };
+		float v[4];
+	};
 
-  //default identity quaternion
-  Quat() : x(0.0), y(0.0), z(0.0), s(1.0) {}
-  Quat(float v) : x(v), y(v), z(v), s(v) {}
-  Quat(float _x, float _y, float _z, float _s) : x(_x), y(_y), z(_z), s(_s) {}
+	// default identity quaternion
+	Quat() : x(0.0), y(0.0), z(0.0), s(1.0) {}
+	Quat(float v) : x(v), y(v), z(v), s(v) {}
+	Quat(float _x, float _y, float _z, float _s) : x(_x), y(_y), z(_z), s(_s) {}
 
-  /// @brief creates a quaternion from an angle and specified axis
-  /// @param 1: angle
-  /// @param 2: axis
-  static Quat fromDegrees(float angle, Vector3f axis);
-  /// @brief creates a quaternion from an angle and specified axis
-  /// @param 1: angle
-  /// @param 2: axis
-  static Quat fromRadians(float angle, Vector3f axis);
+	/// @brief creates a quaternion from an angle and specified axis
+	/// @param 1: angle
+	/// @param 2: axis
+	static Quat fromDegrees(float angle, Vector3f axis);
+	/// @brief creates a quaternion from an angle and specified axis
+	/// @param 1: angle
+	/// @param 2: axis
+	static Quat fromRadians(float angle, Vector3f axis);
 
-  float norm() const;
-  Quat  unit() const;
-  
-  // conjugate() of a unit quaternion is its inverse rotation
-  Quat conjugate() const;
-  Quat inverse()   const;
+	float norm() const;
+	Quat unit() const;
 
-  Mat3x3 toMat3x3() const;
-  Mat4x4 toMat4x4() const;
-  Vector3f rotatePoint(const Vector3f &point) const;
+	// conjugate() of a unit quaternion is its inverse rotation
+	Quat conjugate() const;
+	Quat inverse() const;
+
+	Mat3x3 toMat3x3() const;
+	Mat4x4 toMat4x4() const;
+	Vector3f rotatePoint(const Vector3f &point) const;
 };
 Vector3f axis(Quat q);
 float dot(const Quat &lhs, const Quat &rhs);
