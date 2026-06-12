@@ -191,12 +191,12 @@ Mat4x4 ShadowMap::computeLightSpaceMatrix(
 {
     // Place the light source far enough back along its direction that the
     // entire scene sphere fits between the near and far planes.
-    const Vector3f lightPos = sceneCenter - lightDir.unit() * sceneRadius;
+    const Vector3f lightPos = sceneCenter - lightDir.normalize() * sceneRadius;
 
     // lookAt: light looks toward the scene centre from lightPos.
     // Choose up = world Y unless light direction is nearly vertical,
     // in which case use world Z to avoid degenerate cross product.
-    const Vector3f up = (std::abs(lightDir.unit().y) < 0.99f) ? Vector3f(0.0f, 1.0f, 0.0f) : Vector3f(0.0f, 0.0f, 1.0f);
+    const Vector3f up = (std::abs(lightDir.normalize().y) < 0.99f) ? Vector3f(0.0f, 1.0f, 0.0f) : Vector3f(0.0f, 0.0f, 1.0f);
 
     const Mat4x4 lightView = look_at(lightPos, sceneCenter, up);
 

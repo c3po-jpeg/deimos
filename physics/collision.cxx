@@ -16,7 +16,7 @@ Contact testSphereSphere(RigidBody *a, RigidBody *b)
         c.hasCollision = true;
         c.bodyA = a;
         c.bodyB = b;
-        c.normal = ab.unit();
+        c.normal = ab.normalize();
         c.pointAWorldSpace = a->position() + c.normal * rA;
         c.pointBWorldSpace = b->position() - c.normal * rB;
         c.penetrationDepth = rab - ab.mag();
@@ -91,7 +91,7 @@ void resolveCollision(Contact &contact)
 
     if(velTang.magSqrd() > 1e-10)
     {
-        Vector3f relativeTangent = velTang.unit();
+        Vector3f relativeTangent = velTang.normalize();
         const Vector3f inertiaA = cross(invWorldInertiaA * cross(ra, relativeTangent), ra);
         const Vector3f inertiaB = cross(invWorldInertiaB * cross(rb, relativeTangent), rb);
         const float frictionDenominator = dot(inertiaA + inertiaB, relativeTangent);

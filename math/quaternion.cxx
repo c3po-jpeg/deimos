@@ -16,7 +16,7 @@ Quat Quat::fromDegrees(float angle, Vector3f axis)
 	float s = std::sin(to_radians(angle / 2.0));
 	float c = std::cos(to_radians(angle / 2.0));
 
-	Vector3f unit = axis.unit();
+	Vector3f unit = axis.normalize();
 	Quat result;
 	result.s = c;
 	result.x = unit.x * s;
@@ -30,7 +30,7 @@ Quat Quat::fromRadians(float angle, Vector3f axis)
 	float s = std::sin(angle / 2.0);
 	float c = std::cos(angle / 2.0);
 
-	Vector3f unit = axis.unit();
+	Vector3f unit = axis.normalize();
 	Quat result;
 	result.s = c;
 	result.x = unit.x * s;

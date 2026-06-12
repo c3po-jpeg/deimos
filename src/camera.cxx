@@ -106,14 +106,14 @@ void Camera::updateVectors()
     front.y = std::sin(to_radians(m_pitch));
     front.z = std::sin(to_radians(m_yaw)) * std::cos(to_radians(m_pitch));
 
-    m_front = front.unit();
+    m_front = front.normalize();
 
     // Right vector: perpendicular to front and world up.
     // normalize() needed because the cross product length depends on the angle
     // between the two vectors.
-    m_right = cross(m_front, m_worldUp).unit();
+    m_right = cross(m_front, m_worldUp).normalize();
 
     // Camera-local up: perpendicular to both front and right.
     // This tilts with the camera when pitch changes.
-    m_up = cross(m_right, m_front).unit();
+    m_up = cross(m_right, m_front).normalize();
 }

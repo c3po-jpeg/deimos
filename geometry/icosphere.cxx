@@ -153,7 +153,7 @@ void Icosphere::buildGeometry()
     auto midPoint = [&](const Vertex3D &a, const Vertex3D &b) -> Vertex3D
     {
         // Average positions then project onto sphere
-        Vector3f mid    = ((a.pos + b.pos) * 0.5f).unit(); // unit direction
+        Vector3f mid    = ((a.pos + b.pos) * 0.5f).normalize(); // unit direction
         Vector3f pos    = mid * m_radius;                   // scaled to radius
 
         // Linear UV interpolation

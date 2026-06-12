@@ -43,7 +43,7 @@ void RigidBody::applyAngularImpulse(const Vector3f &impulse)
 
     if (angularVelocity.magSqrd() > MAX_ANG_VEL * MAX_ANG_VEL)
     {
-        angularVelocity = angularVelocity.unit() * MAX_ANG_VEL;
+        angularVelocity = angularVelocity.normalize() * MAX_ANG_VEL;
     }
 }
 

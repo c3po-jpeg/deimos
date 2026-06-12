@@ -76,9 +76,9 @@ Mat4x4 Mat4x4::transpose() const
 Mat4x4 look_at(const Vector3f &pos, const Vector3f &fr, const Vector3f &up)
 {
 	// cr = camera right vector
-	Vector3f cd = (pos - fr).unit();
-	Vector3f cr = (cross(up, cd)).unit();
-	Vector3f cu = (cross(cd, cr)).unit();
+	Vector3f cd = (pos - fr).normalize();
+	Vector3f cr = (cross(up, cd)).normalize();
+	Vector3f cu = (cross(cd, cr)).normalize();
 
 	// rotation and translation matrix combined
 	float xx = cr.x;

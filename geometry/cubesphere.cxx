@@ -49,7 +49,7 @@ void CubeSphere::buildGeometry()
 
                 // Use cube-to-sphere projection: normalize, then adjust by sqrt(1 + x²/2 + y²/2)
                 // This reduces area distortion at cube corners compared to simple normalization
-                Vector3f normalized = position.unit();
+                Vector3f normalized = position.normalize();
                 /* float factor = std::sqrt(1.0f + normalized.x * normalized.x * 0.5f + normalized.y * normalized.y * 0.5f);
                 Vector3f adjusted = normalized * (1.0f / factor); */
 
