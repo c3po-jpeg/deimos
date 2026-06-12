@@ -2,10 +2,7 @@
 #include "headers/camera.hxx"
 
 #include "../geometry/headers/shape.hxx"
-#include "../geometry/headers/cube.hxx"
 #include "../geometry/headers/cubesphere.hxx"
-#include "../geometry/headers/icosphere.hxx"
-#include "../geometry/headers/plane.hxx"
 #include "../physics/headers/physicsworld.hxx"
 #include "../physics/headers/rigidbody.hxx"
 #include "../physics/headers/collider.hxx"
@@ -53,11 +50,11 @@ void Scene::addCubeSphere(float x, float y, float z, float radius, int subDivisi
     if(isStatic){
         sphereBody.makeStatic();
     } else{
-        sphereBody.restitution = 0.8f;
-        //sphereBody.friction    = 0.5f;
+        sphereBody.restitution = 0.5f;
+        sphereBody.friction    = 0.5f;
         sphereBody.mass        = mass;
     }
-    
+
     m_physicsWorld->addRigidBody(std::move(sphereBody));
 
     // Rendering sphere
@@ -65,7 +62,7 @@ void Scene::addCubeSphere(float x, float y, float z, float radius, int subDivisi
     sphere->setMaterial(material);
     sphere->setPosition({x, y, z});
     sphere->upload();
-    
+
     m_shapes.push_back(std::move(sphere));
     m_drawablesDirty = true;
 }
@@ -79,7 +76,7 @@ void Scene::update(float deltaTime, float aspect)
     m_light.cameraPos = Vector4f(camPos.x, camPos.y, camPos.z, 1.0f);
     // Update physics
     m_physicsWorld->update(deltaTime);
-    
+
     // Sync render state with physics bodies
     syncRenderables();
 }
@@ -115,7 +112,7 @@ void Scene::syncRenderables()
     // Shapes are added in the same order as their corresponding physics bodies (after floor)
     // Sync dynamic bodies with shapes
     for (size_t bodyIdx = 0, shapeIdx = 0;
-        bodyIdx < m_physicsWorld->m_rigidBodies.size() && shapeIdx < m_shapes.size(); 
+        bodyIdx < m_physicsWorld->m_rigidBodies.size() && shapeIdx < m_shapes.size();
         ++bodyIdx, ++shapeIdx)
     {
         const auto &body = m_physicsWorld->m_rigidBodies[bodyIdx];
@@ -123,7 +120,7 @@ void Scene::syncRenderables()
         {
             m_shapes[shapeIdx]->setTransform(body->transform);
         }
-        
+
     }
 
     m_drawablesDirty = true;

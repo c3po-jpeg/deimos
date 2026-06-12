@@ -11,9 +11,9 @@ struct RigidBody
 {
     RigidBody(std::unique_ptr<Collider> collider) : collider(std::move(collider)) {}
 
-    float     mass = 1.0f;
-    float     restitution = 0.5f;
-    float     friction = 0.5f;
+    float     mass          = 1.0f;
+    float     restitution   = 0.5f;
+    float     friction      = 0.5f;
     float     linearDamping = 0.5f;
 
     Transform transform;

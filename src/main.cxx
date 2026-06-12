@@ -16,14 +16,13 @@ int main(int argc, char *argv[])
         // Add game objects
         // Large static floor
         scene.addCubeSphere(
-            0.0f, -1002.0f, 0.0f, 
-            1000.0f, 
-            400,
+            0.0f, -1002.0f, 0.0f,
+            1000.0f, 400,
             Material::checker({1.0, 1.0, 1.0}, {0.4, 0.4, 0.4}, 300.0),
             1.0f, true);
 
-        scene.addCubeSphere(-0.5f, 3.0f, -0.5f, 0.5f, 40);
-        scene.addCubeSphere( 2.0f, 2.0f, -1.0f, 0.5f, 40);
+        scene.addCubeSphere(0.0f, 3.0f, 0.0f, 0.5f, 40);
+        scene.addCubeSphere(2.0f, 2.0f, 0.0f, 0.5f, 40);
         // app.toggleWireframe(); // Start in wireframe mode for debugging
         app.run(scene);
 
