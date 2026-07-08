@@ -6,9 +6,9 @@ void PhysicsWorld::addRigidBody(RigidBody &&rb)
     m_rigidBodies.push_back(std::make_unique<RigidBody>(std::move(rb)));
 }
 
-void PhysicsWorld::integrate(float dt)
+void PhysicsWorld::integrate(const float dt) const
 {
-    for (auto &body : m_rigidBodies)
+    for (const auto &body : m_rigidBodies)
     {
         if (!body->isStatic())
         {
@@ -18,7 +18,7 @@ void PhysicsWorld::integrate(float dt)
     }
 }
 
-void PhysicsWorld::handleCollisions()
+void PhysicsWorld::handleCollisions() const
 {
     for (size_t i = 0; i < m_rigidBodies.size(); ++i)
     {
@@ -27,8 +27,8 @@ void PhysicsWorld::handleCollisions()
             if (m_rigidBodies[i]->isStatic() && m_rigidBodies[j]->isStatic())
                 continue; // Skip static-static pairs
 
-            Contact contact = testCollision(m_rigidBodies[i].get(), m_rigidBodies[j].get());
-            if (contact.hasCollision)
+            if (Contact contact = testCollision(m_rigidBodies[i].get(), m_rigidBodies[j].get());
+                contact.hasCollision)
             {
                 resolveCollision(contact);
             }
