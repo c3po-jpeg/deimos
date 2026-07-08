@@ -4,11 +4,11 @@
 
 Mat4x4 Mat4x4::identity()
 {
-	return Mat4x4(
+	return {
 		1.0, 0.0, 0.0, 0.0,
 		0.0, 1.0, 0.0, 0.0,
 		0.0, 0.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 1.0);
+		0.0, 0.0, 0.0, 1.0};
 }
 
 Mat4x4 translate(const Vector3f t)
@@ -66,11 +66,11 @@ Mat4x4 rotationZ(float angle)
 
 Mat4x4 Mat4x4::transpose() const
 {
-	return Mat4x4(
+	return {
 		this->xx, this->yx, this->zx, this->wx,
 		this->xy, this->yy, this->zy, this->wy,
 		this->xz, this->yz, this->zz, this->wz,
-		this->xw, this->yw, this->zw, this->ww);
+		this->xw, this->yw, this->zw, this->ww};
 }
 
 Mat4x4 look_at(const Vector3f &pos, const Vector3f &fr, const Vector3f &up)
@@ -96,11 +96,11 @@ Mat4x4 look_at(const Vector3f &pos, const Vector3f &fr, const Vector3f &up)
 	float zz = cd.z;
 	float zw = -pos.x * cd.x - pos.y * cd.y - pos.z * cd.z;
 
-	return Mat4x4(
+	return {
 		xx, xy, xz, xw,
 		yx, yy, yz, yw,
 		zx, zy, zz, zw,
-		0.0, 0.0, 0.0, 1.0);
+		0.0, 0.0, 0.0, 1.0};
 }
 
 Quat Mat4x4::toQuat() const
@@ -117,7 +117,7 @@ Quat Mat4x4::toQuat() const
 		x = coeff * (this->zy - this->yz);
 		y = coeff * (this->xz - this->zx);
 		z = coeff * (this->yx - this->xy);
-		return Quat(x, y, z, s);
+		return {x, y, z, s};
 	}
 
 	x = 0.5 * std::sqrt(1.0 + this->xx - this->yy - this->zz);
@@ -127,7 +127,7 @@ Quat Mat4x4::toQuat() const
 		y = coeff * (this->xy + this->yx);
 		z = coeff * (this->xz + this->zx);
 		s = coeff * (this->zy - this->yz);
-		return Quat(x, y, z, s);
+		return {x, y, z, s};
 	}
 
 	y = 0.5 * std::sqrt(1.0 - this->xx + this->yy - this->zz);
@@ -137,7 +137,7 @@ Quat Mat4x4::toQuat() const
 		x = coeff * (this->xy + this->yx);
 		z = coeff * (this->yz + this->zy);
 		s = coeff * (this->xz - this->zx);
-		return Quat(x, y, z, s);
+		return {x, y, z, s};
 	}
 	// if all else fails just use z
 	z = 0.5 * std::sqrt(1.0 - this->xx - this->yy + this->zz);
@@ -145,7 +145,7 @@ Quat Mat4x4::toQuat() const
 	x = coeff * (this->xz + this->zx);
 	y = coeff * (this->yz + this->zy);
 	s = coeff * (this->yx - this->xy);
-	return Quat(x, y, z, s);
+	return {x, y, z, s};
 }
 
 Mat4x4 orthogonal(float l, float r, float b, float t, float n, float f)
@@ -186,53 +186,53 @@ Mat4x4 perspective(float fov, float aspectRatio, float N, float F)
 }
 Mat4x4 operator*(const Mat4x4 &l, float r)
 {
-	return Mat4x4(
+	return {
 		l.rows[0] * r,
 		l.rows[1] * r,
 		l.rows[2] * r,
-		l.rows[3] * r);
+		l.rows[3] * r};
 }
 Mat4x4 operator*(float l, const Mat4x4 &r)
 {
-	return Mat4x4(
+	return {
 		r.rows[0] * l,
 		r.rows[1] * l,
 		r.rows[2] * l,
-		r.rows[3] * l);
+		r.rows[3] * l};
 }
 
 Vector4f operator*(const Mat4x4 &m, const Vector4f &v)
 {
-	return Vector4f(
+	return {
 		dot(m.rows[0], v),
 		dot(m.rows[1], v),
 		dot(m.rows[2], v),
-		dot(m.rows[3], v));
+		dot(m.rows[3], v)};
 }
 Mat4x4 operator*(const Mat4x4 &l, const Mat4x4 &r)
 {
-	return Mat4x4(
+	return {
 		M4D(0, 0), M4D(0, 1), M4D(0, 2), M4D(0, 3),
 		M4D(1, 0), M4D(1, 1), M4D(1, 2), M4D(1, 3),
 		M4D(2, 0), M4D(2, 1), M4D(2, 2), M4D(2, 3),
-		M4D(3, 0), M4D(3, 1), M4D(3, 2), M4D(3, 3));
+		M4D(3, 0), M4D(3, 1), M4D(3, 2), M4D(3, 3)};
 }
 
 Mat4x4 operator+(const Mat4x4 &l, const Mat4x4 &r)
 {
-	return Mat4x4(
+	return {
 		l.rows[0] + r.rows[0],
 		l.rows[1] + r.rows[1],
 		l.rows[2] + r.rows[2],
-		l.rows[3] + r.rows[3]);
+		l.rows[3] + r.rows[3]};
 }
 Mat4x4 operator-(const Mat4x4 &l, const Mat4x4 &r)
 {
-	return Mat4x4(
+	return {
 		l.rows[0] - r.rows[0],
 		l.rows[1] - r.rows[1],
 		l.rows[2] - r.rows[2],
-		l.rows[3] - r.rows[3]);
+		l.rows[3] - r.rows[3]};
 }
 bool operator==(const Mat4x4 &l, const Mat4x4 &r)
 {

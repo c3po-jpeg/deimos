@@ -3,6 +3,8 @@ add_executable(enceladus
     scene.cxx
     application.cxx
     camera.cxx
+        headers/gui.hxx
+        gui.cxx
 )
 
 target_link_libraries(enceladus

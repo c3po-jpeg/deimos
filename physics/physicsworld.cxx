@@ -20,7 +20,6 @@ void PhysicsWorld::integrate(float dt)
 
 void PhysicsWorld::handleCollisions()
 {
-    // Naive O(n^2) collision detection
     for (size_t i = 0; i < m_rigidBodies.size(); ++i)
     {
         for (size_t j = i + 1; j < m_rigidBodies.size(); ++j)
