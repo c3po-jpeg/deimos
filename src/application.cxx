@@ -159,14 +159,13 @@ void Application::run(Scene &scene)
     float    deltaTime = 0.0f;
     bool     running   = true;
 
-    while (running)
+    while (true)
     {
         const uint64_t now = SDL_GetTicks();
         deltaTime = static_cast<float>(now - lastTicks) / 1000.0f;
         lastTicks = now;
 
-        running = pollEvents();
-        if (!running) break;
+        if (!pollEvents()) break;
 
         // Handle window resize if needed
         if (m_windowResized)
