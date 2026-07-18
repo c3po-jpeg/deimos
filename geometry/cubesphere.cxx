@@ -80,7 +80,6 @@ void CubeSphere::buildGeometry()
         subDivideFace({1.0, 1.0, 1.0},  {0.0, 0.0,-step},  {0.0,-step, 0.0}, faceColors[2]),
         // -X face
         subDivideFace({-1.0, 1.0,-1.0}, {0.0, 0.0, step},  {0.0,-step, 0.0}, faceColors[2])
-    
     };
 
     // index generation

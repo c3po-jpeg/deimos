@@ -22,6 +22,7 @@ public:
 
     ~Core();
 
+    VkInstance       getInstance()            const { return m_instance;};
     VkDevice         getDevice()              const { return m_device; }
     VkPhysicalDevice getPhysicaldevice()      const { return m_physicalDevice; }
     VkSurfaceKHR     getSurface()             const { return m_surface; }

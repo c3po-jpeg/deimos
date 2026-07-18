@@ -4,379 +4,408 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 
-#include <vulkan/vulkan.h>
 #include <iostream>
+#include <vulkan/vulkan.h>
+
+#include "../external/imgui/imgui.h"
+#include "../external/imgui/imgui_impl_sdl3.h"
+#include "../external/imgui/imgui_impl_vulkan.h"
 
 #include "../renderer/headers/core.hxx"
-#include "../renderer/headers/swapchain.hxx"
-#include "../renderer/headers/renderpass.hxx"
-#include "../renderer/headers/renderer.hxx"
 #include "../renderer/headers/descriptors.hxx"
-#include "../renderer/headers/pipeline.hxx"
-#include "../renderer/headers/shader.hxx"
-#include "../renderer/headers/vertex.hxx"
-#include "../renderer/headers/shadowmap.hxx"
 #include "../renderer/headers/drawable.hxx"
+#include "../renderer/headers/pipeline.hxx"
+#include "../renderer/headers/renderer.hxx"
+#include "../renderer/headers/renderpass.hxx"
+#include "../renderer/headers/shader.hxx"
+#include "../renderer/headers/shadowmap.hxx"
+#include "../renderer/headers/swapchain.hxx"
 #include "../renderer/headers/ubo.hxx"
+#include "../renderer/headers/vertex.hxx"
 
 #include "headers/camera.hxx"
 
 Application::Application(const std::string &title, int width, int height)
-    : m_width(width), m_height(height)
-{
-    try
-    {
-        initializeSDL(title);
-        initializeVulkan();
-    }
-    catch (const std::exception &e)
-    {
-        shutdownVulkan();
-        shutdownSDL();
-        throw;
-    }
-}
-
-Application::~Application()
-{
+    : m_width(width), m_height(height) {
+  try {
+    initializeSDL(title);
+    initializeVulkan();
+  } catch (const std::exception &e) {
     shutdownVulkan();
     shutdownSDL();
+    throw;
+  }
 }
 
-void Application::initializeSDL(const std::string &title)
-{
-    if (!SDL_Init(SDL_INIT_VIDEO))
-    {
-        throw std::runtime_error(std::string("Failed to initialize SDL3: ") + SDL_GetError());
-    }
-
-    if (!SDL_Vulkan_LoadLibrary(nullptr))
-        throw std::runtime_error(std::string("Failed to load Vulkan: ") + SDL_GetError());
-
-    m_window = SDL_CreateWindow(
-        title.c_str(),
-        m_width, m_height,
-        SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
-
-    if (!m_window)
-    {
-        SDL_Quit();
-        throw std::runtime_error(std::string("Failed to create window: ") + SDL_GetError());
-    }
-
-    std::cout << "Window created: " << m_width << "x" << m_height << std::endl;
+Application::~Application() {
+  shutdownVulkan();
+  shutdownSDL();
 }
 
-void Application::initializeVulkan()
-{
-    m_core       = std::make_unique<Core>(m_window);
-    m_swapchain  = std::make_unique<Swapchain>(*m_core, m_window);
-    m_renderPass = std::make_unique<RenderPass>(*m_core, m_swapchain->getFormat(), m_swapchain->getDepthFormat());
-    m_shadowMap  = std::make_unique<ShadowMap>(*m_core);
+void Application::initializeSDL(const std::string &title) {
+  if (!SDL_Init(SDL_INIT_VIDEO)) {
+    throw std::runtime_error(std::string("Failed to initialize SDL3: ") +
+                             SDL_GetError());
+  }
 
-    // ---- Pipeline -------------------------------------------------------
-    Shader vertShader(*m_core, "build/shaders/shader.vert.spv");
-    Shader fragShader(*m_core, "build/shaders/shader.frag.spv");
+  if (!SDL_Vulkan_LoadLibrary(nullptr))
+    throw std::runtime_error(std::string("Failed to load Vulkan: ") +
+                             SDL_GetError());
 
-    VkPushConstantRange pushRange{};
-    pushRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    pushRange.offset     = 0;
-    pushRange.size       = sizeof(Mat4x4);
+  m_window = SDL_CreateWindow(title.c_str(), m_width, m_height,
+                              SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
 
-    auto attribDescs = Vertex3D::getAttributeDescriptions();
-
-    m_globalDescriptor  = std::make_unique<GlobalDescriptor>(*m_core, MAX_FRAMES_IN_FLIGHT, *m_shadowMap);
-    MaterialDescriptor::createLayout(m_core->getDevice());
-    std::cout << "material descriptor created" << std::endl;
-
-    PipelineConfig pipelineConfig{
-        .core                  = *m_core,
-        .renderPass            = m_renderPass->getHandle(),
-        .swapChainExtent       = m_swapchain->getExtent(),
-        .vertShader            = &vertShader,
-        .fragShader            = &fragShader,
-        .globalDescLayout      = m_globalDescriptor->getLayout(),
-        .materialDescLayout    = MaterialDescriptor::getLayout(),
-        .bindingDescriptions   = {Vertex3D::getBindingDescription()},
-        .attributeDescriptions = {attribDescs.begin(), attribDescs.end()},
-        .pushConstantRanges    = {pushRange},
-    };
-    m_pipeline = std::make_unique<Pipeline>(pipelineConfig);
-
-    // ---- Wireframe Pipeline -------------------------------------------------------
-
-    pipelineConfig.wireframe = true;
-    pipelineConfig.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-    m_wireframePipeline = std::make_unique<Pipeline>(pipelineConfig);
-
-
-    // ---- Renderer -------------------------------------------------------
-    RendererConfig rendererConfig{
-        .core                = *m_core,
-        .renderPass          = m_renderPass->getHandle(),
-        .swapChainExtent     = m_swapchain->getExtent(),
-        .swapChainImageViews = m_swapchain->getImageViews(),
-        .depthImageView      = m_swapchain->getDepthView(),
-        .globalDescriptor    = *m_globalDescriptor,
-        //.materialDescriptor  = *m_materialDescriptor
-    };
-    m_renderer = std::make_unique<Renderer>(rendererConfig);
-}
-
-void Application::shutdownSDL()
-{
-    if (m_window)
-    {
-        SDL_DestroyWindow(m_window);
-        m_window = nullptr;
-    }
-    SDL_Vulkan_UnloadLibrary();
+  if (!m_window) {
     SDL_Quit();
+    throw std::runtime_error(std::string("Failed to create window: ") +
+                             SDL_GetError());
+  }
+
+  std::cout << "Window created: " << m_width << "x" << m_height << std::endl;
 }
 
-void Application::shutdownVulkan()
-{
-    // Destroy command buffers FIRST (they reference other resources)
-    m_renderer.reset();
-    if (m_core)
-    {
-        MaterialDescriptor::destroyLayout(m_core->getDevice());
-    }
-    // Then destroy the resources they were referencing
-    m_pipeline.reset();
-    m_wireframePipeline.reset();
-    m_globalDescriptor.reset();
-    
-    m_shadowMap.reset();
-    m_renderPass.reset();
-    m_swapchain.reset();
-    m_core.reset();
+void Application::initializeVulkan() {
+  m_core = std::make_unique<Core>(m_window);
+  m_swapchain = std::make_unique<Swapchain>(*m_core, m_window);
+  m_renderPass = std::make_unique<RenderPass>(*m_core, m_swapchain->getFormat(),
+                                              m_swapchain->getDepthFormat());
+  m_shadowMap = std::make_unique<ShadowMap>(*m_core);
+
+  // ---- Pipeline -------------------------------------------------------
+  Shader vertShader(*m_core, "build/shaders/shader.vert.spv");
+  Shader fragShader(*m_core, "build/shaders/shader.frag.spv");
+
+  VkPushConstantRange pushRange{};
+  pushRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+  pushRange.offset = 0;
+  pushRange.size = sizeof(Mat4x4);
+
+  auto attribDescs = Vertex3D::getAttributeDescriptions();
+
+  m_globalDescriptor = std::make_unique<GlobalDescriptor>(
+      *m_core, MAX_FRAMES_IN_FLIGHT, *m_shadowMap);
+  MaterialDescriptor::createLayout(m_core->getDevice());
+  std::cout << "material descriptor created" << std::endl;
+
+  PipelineConfig pipelineConfig{
+      .core = *m_core,
+      .renderPass = m_renderPass->getHandle(),
+      .swapChainExtent = m_swapchain->getExtent(),
+      .vertShader = &vertShader,
+      .fragShader = &fragShader,
+      .globalDescLayout = m_globalDescriptor->getLayout(),
+      .materialDescLayout = MaterialDescriptor::getLayout(),
+      .bindingDescriptions = {Vertex3D::getBindingDescription()},
+      .attributeDescriptions = {attribDescs.begin(), attribDescs.end()},
+      .pushConstantRanges = {pushRange},
+  };
+  m_pipeline = std::make_unique<Pipeline>(pipelineConfig);
+
+  // ---- Wireframe Pipeline
+  // -------------------------------------------------------
+
+  pipelineConfig.wireframe = true;
+  pipelineConfig.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+  m_wireframePipeline = std::make_unique<Pipeline>(pipelineConfig);
+
+  // ---- Renderer -------------------------------------------------------
+  RendererConfig rendererConfig{
+      .core = *m_core,
+      .renderPass = m_renderPass->getHandle(),
+      .swapChainExtent = m_swapchain->getExtent(),
+      .swapChainImageViews = m_swapchain->getImageViews(),
+      .depthImageView = m_swapchain->getDepthView(),
+      .globalDescriptor = *m_globalDescriptor,
+      //.materialDescriptor  = *m_materialDescriptor
+  };
+  m_renderer = std::make_unique<Renderer>(rendererConfig);
+
 }
 
-void Application::run(Scene &scene)
-{
-    uint64_t lastTicks = SDL_GetTicks();
-    float    deltaTime = 0.0f;
-    bool     running   = true;
+void Application::initImgui() {
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  m_io = &ImGui::GetIO();
+  (void)m_io;
+  m_io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-    while (true)
-    {
-        const uint64_t now = SDL_GetTicks();
-        deltaTime = static_cast<float>(now - lastTicks) / 1000.0f;
-        lastTicks = now;
+  ImGui::StyleColorsDark();
+  ImGui_ImplSDL3_InitForVulkan(m_window);
 
-        if (!pollEvents()) break;
+  VkDescriptorPoolSize pool_sizes[] = {
+      {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+       IMGUI_IMPL_VULKAN_MINIMUM_SAMPLED_IMAGE_POOL_SIZE},
+      {VK_DESCRIPTOR_TYPE_SAMPLER, IMGUI_IMPL_VULKAN_MINIMUM_SAMPLER_POOL_SIZE},
+  };
+  VkDescriptorPoolCreateInfo pool_info = {};
+  pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+  pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+  pool_info.maxSets = 0;
+  for (VkDescriptorPoolSize &pool_size : pool_sizes)
+    pool_info.maxSets += pool_size.descriptorCount;
+  pool_info.poolSizeCount = (uint32_t)IM_COUNTOF(pool_sizes);
+  pool_info.pPoolSizes = pool_sizes;
+  vkCreateDescriptorPool(m_core->getDevice(), &pool_info, nullptr,
+                         &m_imguiDescriptorPool);
 
-        // Handle window resize if needed
-        if (m_windowResized)
-        {
-            recreateSwapchain();
-            m_windowResized = false;
-        }
-
-        handleInput(scene, deltaTime);
-        updateScene(scene, deltaTime);
-        renderFrame(scene);
-    }
-    
-    // Ensure GPU is idle before Scene is destroyed
-    // (Scene's buffers are still being referenced by command buffers)
-    if (m_core)
-        vkDeviceWaitIdle(m_core->getDevice());
+  ImGui_ImplVulkan_InitInfo init_info = {};
+  init_info.Instance = m_core->getInstance();
+  init_info.PhysicalDevice = m_core->getPhysicaldevice();
+  init_info.Device = m_core->getDevice();
+  init_info.QueueFamily = m_core->getGraphicsFamilyIndex();
+  init_info.Queue = m_core->getGraphicsQueue();
+  init_info.PipelineCache = VK_NULL_HANDLE;
+  init_info.DescriptorPool = m_imguiDescriptorPool;
+  init_info.MinImageCount = 2;
+  init_info.ImageCount = 2;
+  init_info.Allocator = nullptr;
+  init_info.PipelineInfoMain.RenderPass = m_renderPass->getHandle();
+  ImGui_ImplVulkan_Init(&init_info);
 }
 
-bool Application::pollEvents()
-{
-    SDL_Event event;
-    while (SDL_PollEvent(&event))
-    {
-        switch (event.type)
-        {
-        case SDL_EVENT_QUIT:
-            std::cout << "Quit event received, exiting main loop." << std::endl;
-            return false;
+void Application::shutdownImgui() {
+    vkDestroyDescriptorPool(m_core->getDevice(), m_imguiDescriptorPool, nullptr);
 
-        case SDL_EVENT_WINDOW_RESIZED:
-            {
-                m_width  = event.window.data1;
-                m_height = event.window.data2;
-                m_windowResized = true;
-                std::cout << "Window resized to: " << m_width << "x" << m_height << std::endl;
-            }
-            break;
-
-        case SDL_EVENT_KEY_DOWN:
-            switch (event.key.key)
-            {
-            case SDLK_ESCAPE:
-                return false;
-            case SDLK_TAB:
-            {
-                SDL_SetWindowRelativeMouseMode(m_window, !SDL_GetWindowRelativeMouseMode(m_window));
-                break;
-            }
-            default: break;
-            }
-            break;
-        case SDL_EVENT_MOUSE_MOTION:
-            {
-                // Get mouse motion
-                if (SDL_GetWindowRelativeMouseMode(m_window))
-                {
-                    m_mouseX = static_cast<int>(event.motion.xrel);
-                    m_mouseY = static_cast<int>(event.motion.yrel);
-                }
-            }
-
-        default: break;
-        }
-    }
-    return true;
+    ImGui_ImplVulkan_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
+    ImGui::DestroyContext();
 }
 
-void Application::handleInput(Scene &scene, float deltaTime)
-{
-    const bool *keys = SDL_GetKeyboardState(nullptr);
-
-    scene.handleInput(deltaTime, keys, m_mouseX, m_mouseY);
-    //
-    m_mouseX = 0;
-    m_mouseY = 0;
+void Application::shutdownSDL() {
+  if (m_window) {
+    SDL_DestroyWindow(m_window);
+    m_window = nullptr;
+  }
+  SDL_Vulkan_UnloadLibrary();
+  SDL_Quit();
 }
 
-void Application::updateScene(Scene &scene, float deltaTime)
-{
-    scene.update(deltaTime, 
-        static_cast<float>(m_width) / static_cast<float>(m_height));
+void Application::shutdownVulkan() {
+  // Destroy command buffers FIRST (they reference other resources)
+  m_renderer.reset();
+  if (m_core) {
+    MaterialDescriptor::destroyLayout(m_core->getDevice());
+  }
+  // Then destroy the resources they were referencing
+  m_pipeline.reset();
+  m_wireframePipeline.reset();
+  m_globalDescriptor.reset();
+
+  m_shadowMap.reset();
+  m_renderPass.reset();
+  m_swapchain.reset();
+  m_core.reset();
 }
 
-void Application::renderFrame(Scene &scene)
-{
-    m_renderer->clearColor(0.2, 0.3, 0.6);
+void Application::run(Scene &scene) {
+  uint64_t lastTicks = SDL_GetTicks();
+  float deltaTime = 0.0f;
+  bool running = true;
 
-    // Compute light space matrix
-    auto light = scene.getLight();
-    light.lightSpaceMatrix = m_shadowMap->computeLightSpaceMatrix(
-        Vector3f(light.direction.x, light.direction.y, light.direction.z));
+  while (true) {
+    const uint64_t now = SDL_GetTicks();
+    deltaTime = static_cast<float>(now - lastTicks) / 1000.0f;
+    lastTicks = now;
 
-    uint32_t frameIndex = m_renderer->getFrame(
-        m_swapchain->getHandle(),
-        m_swapchain->getExtent());
+    if (!pollEvents())
+      break;
 
-    m_renderer->beginRecording();
-
-    // ---- Shadow render pass
-    {
-        m_shadowMap->beginRenderpass(m_renderer->getCommandBuffer());
-
-        for (const auto &drawable : scene.getDrawables())
-        {
-            m_shadowMap->drawShadow(
-                m_renderer->getCommandBuffer(),
-                drawable,
-                light.lightSpaceMatrix);
-        }
-
-        m_shadowMap->endRenderpass(m_renderer->getCommandBuffer());
-    }
-
-    // ---- Main render pass
-    {
-        m_renderer->beginRenderPass(
-            m_renderPass->getHandle(),
-            frameIndex,
-            m_swapchain->getExtent());
-
-        if(m_wireframeMode)
-        {
-            m_renderer->bindPipeline(*m_wireframePipeline);
-            m_renderer->bindGlobalDescriptors(scene.getCamera().getUBO(), light, m_wireframePipeline->getLayout());
-            for (const auto &drawable : scene.getDrawables())     
-            {
-                m_renderer->bindMaterial(drawable.material, m_wireframePipeline->getLayout());
-                m_renderer->draw(drawable, *m_wireframePipeline);
-            }
-        }
-        else
-        {
-            m_renderer->bindPipeline(*m_pipeline);
-            m_renderer->bindGlobalDescriptors(scene.getCamera().getUBO(), light, m_pipeline->getLayout());
-            for (const auto &drawable : scene.getDrawables())
-            {
-                m_renderer->bindMaterial(drawable.material, m_pipeline->getLayout());
-                //std::cout << drawable.material.useChecker << std::endl;
-                m_renderer->draw(drawable, *m_pipeline);
-            }
-        }
-
-        m_renderer->endRenderPass();
+    // Handle window resize if needed
+    if (m_windowResized) {
+      recreateSwapchain();
+      m_windowResized = false;
     }
 
-    m_renderer->endRecording();
-    m_renderer->presentFrame(m_swapchain->getHandle(), frameIndex);
-}
+    handleInput(scene, deltaTime);
+    updateScene(scene, deltaTime);
+    renderFrame(scene);
+  }
 
-void Application::recreateSwapchain()
-{
-    // Wait for device to idle before recreating resources
+  // Ensure GPU is idle before Scene is destroyed
+  // (Scene's buffers are still being referenced by command buffers)
+  if (m_core)
     vkDeviceWaitIdle(m_core->getDevice());
+}
 
-    //MaterialDescriptor::destroyLayout(m_core->getDevice());
+bool Application::pollEvents() {
+  SDL_Event event;
+  while (SDL_PollEvent(&event)) {
+    switch (event.type) {
+    case SDL_EVENT_QUIT:
+      std::cout << "Quit event received, exiting main loop." << std::endl;
+      return false;
 
-    // Destroy resources that depend on swapchain in reverse order
-    m_renderer.reset();
-    m_pipeline.reset();
-    //m_globalDescriptor.reset();
-    m_renderPass.reset();
-    m_swapchain.reset();
+    case SDL_EVENT_WINDOW_RESIZED: {
+      m_width = event.window.data1;
+      m_height = event.window.data2;
+      m_windowResized = true;
+      std::cout << "Window resized to: " << m_width << "x" << m_height
+                << std::endl;
+    } break;
 
-    // Recreate swapchain and dependent resources
-    m_swapchain = std::make_unique<Swapchain>(*m_core, m_window);
-    m_renderPass = std::make_unique<RenderPass>(*m_core, m_swapchain->getFormat(), m_swapchain->getDepthFormat());
+    case SDL_EVENT_KEY_DOWN:
+      switch (event.key.key) {
+      case SDLK_ESCAPE:
+        return false;
+      case SDLK_TAB: {
+        SDL_SetWindowRelativeMouseMode(
+            m_window, !SDL_GetWindowRelativeMouseMode(m_window));
+        break;
+      }
+      default:
+        break;
+      }
+      break;
+    case SDL_EVENT_MOUSE_MOTION: {
+      // Get mouse motion
+      if (SDL_GetWindowRelativeMouseMode(m_window)) {
+        m_mouseX = static_cast<int>(event.motion.xrel);
+        m_mouseY = static_cast<int>(event.motion.yrel);
+      }
+    }
 
-    // ---- Pipeline -------------------------------------------------------
-    Shader vertShader(*m_core, "build/shaders/shader.vert.spv");
-    Shader fragShader(*m_core, "build/shaders/shader.frag.spv");
+    default:
+      break;
+    }
+  }
+  return true;
+}
 
-    VkPushConstantRange pushRange{};
-    pushRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    pushRange.offset     = 0;
-    pushRange.size       = sizeof(Mat4x4);
+void Application::handleInput(Scene &scene, float deltaTime) {
+  const bool *keys = SDL_GetKeyboardState(nullptr);
 
-    auto attribDescs = Vertex3D::getAttributeDescriptions();
+  scene.handleInput(deltaTime, keys, m_mouseX, m_mouseY);
+  //
+  m_mouseX = 0;
+  m_mouseY = 0;
+}
 
-    //m_globalDescriptor = std::make_unique<GlobalDescriptor>(*m_core, MAX_FRAMES_IN_FLIGHT, *m_shadowMap);
-    PipelineConfig pipelineConfig{
-        .core                  = *m_core,
-        .renderPass            = m_renderPass->getHandle(),
-        .swapChainExtent       = m_swapchain->getExtent(),
-        .vertShader            = &vertShader,
-        .fragShader            = &fragShader,
-        .globalDescLayout      = m_globalDescriptor->getLayout(),
-        .materialDescLayout    = MaterialDescriptor::getLayout(),
-        .bindingDescriptions   = {Vertex3D::getBindingDescription()},
-        .attributeDescriptions = {attribDescs.begin(), attribDescs.end()},
-        .pushConstantRanges    = {pushRange},
-    };
-    m_pipeline = std::make_unique<Pipeline>(pipelineConfig);
+void Application::updateScene(Scene &scene, float deltaTime) {
+  scene.update(deltaTime,
+               static_cast<float>(m_width) / static_cast<float>(m_height));
+}
 
-    // ---- Wireframe Pipeline -------------------------------------------------------
+void Application::renderFrame(Scene &scene) {
+  m_renderer->clearColor(0.2, 0.3, 0.6);
 
-    pipelineConfig.wireframe = true;
-    pipelineConfig.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-    m_wireframePipeline = std::make_unique<Pipeline>(pipelineConfig);
+  // Compute light space matrix
+  auto light = scene.getLight();
+  light.lightSpaceMatrix = m_shadowMap->computeLightSpaceMatrix(
+      Vector3f(light.direction.x, light.direction.y, light.direction.z));
 
-    // ---- Renderer -------------------------------------------------------
-    RendererConfig rendererConfig{
-        .core                = *m_core,
-        .renderPass          = m_renderPass->getHandle(),
-        .swapChainExtent     = m_swapchain->getExtent(),
-        .swapChainImageViews = m_swapchain->getImageViews(),
-        .depthImageView      = m_swapchain->getDepthView(),
-        .globalDescriptor    = *m_globalDescriptor,
-        //.materialDescriptor  = *m_materialDescriptor
-    };
-    m_renderer = std::make_unique<Renderer>(rendererConfig);
+  uint32_t frameIndex =
+      m_renderer->getFrame(m_swapchain->getHandle(), m_swapchain->getExtent());
 
-    std::cout << "Swapchain recreated for new size: " << m_width << "x" << m_height << std::endl;
+  m_renderer->beginRecording();
+
+  // ---- Shadow render pass
+  {
+    m_shadowMap->beginRenderpass(m_renderer->getCommandBuffer());
+
+    for (const auto &drawable : scene.getDrawables()) {
+      m_shadowMap->drawShadow(m_renderer->getCommandBuffer(), drawable,
+                              light.lightSpaceMatrix);
+    }
+
+    m_shadowMap->endRenderpass(m_renderer->getCommandBuffer());
+  }
+
+  // ---- Main render pass
+  {
+    m_renderer->beginRenderPass(m_renderPass->getHandle(), frameIndex,
+                                m_swapchain->getExtent());
+
+    if (m_wireframeMode) {
+      m_renderer->bindPipeline(*m_wireframePipeline);
+      m_renderer->bindGlobalDescriptors(scene.getCamera().getUBO(), light,
+                                        m_wireframePipeline->getLayout());
+      for (const auto &drawable : scene.getDrawables()) {
+        m_renderer->bindMaterial(drawable.material,
+                                 m_wireframePipeline->getLayout());
+        m_renderer->draw(drawable, *m_wireframePipeline);
+      }
+    } else {
+      m_renderer->bindPipeline(*m_pipeline);
+      m_renderer->bindGlobalDescriptors(scene.getCamera().getUBO(), light,
+                                        m_pipeline->getLayout());
+      for (const auto &drawable : scene.getDrawables()) {
+        m_renderer->bindMaterial(drawable.material, m_pipeline->getLayout());
+        // std::cout << drawable.material.useChecker << std::endl;
+        m_renderer->draw(drawable, *m_pipeline);
+      }
+    }
+
+    m_renderer->endRenderPass();
+  }
+
+  m_renderer->endRecording();
+  m_renderer->presentFrame(m_swapchain->getHandle(), frameIndex);
+}
+
+void Application::recreateSwapchain() {
+  // Wait for device to idle before recreating resources
+  vkDeviceWaitIdle(m_core->getDevice());
+
+  // MaterialDescriptor::destroyLayout(m_core->getDevice());
+
+  // Destroy resources that depend on swapchain in reverse order
+  m_renderer.reset();
+  m_pipeline.reset();
+  // m_globalDescriptor.reset();
+  m_renderPass.reset();
+  m_swapchain.reset();
+
+  // Recreate swapchain and dependent resources
+  m_swapchain = std::make_unique<Swapchain>(*m_core, m_window);
+  m_renderPass = std::make_unique<RenderPass>(*m_core, m_swapchain->getFormat(),
+                                              m_swapchain->getDepthFormat());
+
+  // ---- Pipeline -------------------------------------------------------
+  Shader vertShader(*m_core, "build/shaders/shader.vert.spv");
+  Shader fragShader(*m_core, "build/shaders/shader.frag.spv");
+
+  VkPushConstantRange pushRange{};
+  pushRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+  pushRange.offset = 0;
+  pushRange.size = sizeof(Mat4x4);
+
+  auto attribDescs = Vertex3D::getAttributeDescriptions();
+
+  // m_globalDescriptor = std::make_unique<GlobalDescriptor>(*m_core,
+  // MAX_FRAMES_IN_FLIGHT, *m_shadowMap);
+  PipelineConfig pipelineConfig{
+      .core = *m_core,
+      .renderPass = m_renderPass->getHandle(),
+      .swapChainExtent = m_swapchain->getExtent(),
+      .vertShader = &vertShader,
+      .fragShader = &fragShader,
+      .globalDescLayout = m_globalDescriptor->getLayout(),
+      .materialDescLayout = MaterialDescriptor::getLayout(),
+      .bindingDescriptions = {Vertex3D::getBindingDescription()},
+      .attributeDescriptions = {attribDescs.begin(), attribDescs.end()},
+      .pushConstantRanges = {pushRange},
+  };
+  m_pipeline = std::make_unique<Pipeline>(pipelineConfig);
+
+  // ---- Wireframe Pipeline
+  // -------------------------------------------------------
+
+  pipelineConfig.wireframe = true;
+  pipelineConfig.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+  m_wireframePipeline = std::make_unique<Pipeline>(pipelineConfig);
+
+  // ---- Renderer -------------------------------------------------------
+  RendererConfig rendererConfig{
+      .core = *m_core,
+      .renderPass = m_renderPass->getHandle(),
+      .swapChainExtent = m_swapchain->getExtent(),
+      .swapChainImageViews = m_swapchain->getImageViews(),
+      .depthImageView = m_swapchain->getDepthView(),
+      .globalDescriptor = *m_globalDescriptor,
+      //.materialDescriptor  = *m_materialDescriptor
+  };
+  m_renderer = std::make_unique<Renderer>(rendererConfig);
+
+  std::cout << "Swapchain recreated for new size: " << m_width << "x"
+            << m_height << std::endl;
 }

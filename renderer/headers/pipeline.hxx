@@ -8,7 +8,7 @@
 class Core;
 class Shader;
 
-/// @brief set topology to VK_PRIMITIVE_TOPOLOGY_LINE_LIST 
+/// @brief set topology to VK_PRIMITIVE_TOPOLOGY_LINE_LIST
 /// when rendering in wireframe mode( wireframe = ture)
 struct PipelineConfig
 {

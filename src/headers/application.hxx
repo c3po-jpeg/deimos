@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <vulkan/vulkan.h>
 
 struct SDL_Window;
 class Core;
@@ -14,11 +15,12 @@ class GlobalDescriptor;
 class MaterialDescriptor;
 class ShadowMap;
 class Scene;
+class Gui;
 
 /**
  * Application -- manages Vulkan/SDL initialization, rendering pipeline,
  * and the main event loop.
- * 
+ *
  * Owns all graphics infrastructure and orchestrates rendering.
  */
 class Application
@@ -26,7 +28,7 @@ class Application
 public:
     /**
      * Initialize the application with window, Vulkan, and rendering pipeline.
-     * 
+     *
      * @param title    Window title
      * @param width    Window width in pixels
      * @param height   Window height in pixels
@@ -44,7 +46,7 @@ public:
     /**
      * Run the main game loop with the given scene.
      * Handles rendering, timing, and input until the user quits.
-     * 
+     *
      * @param scene The scene to render and update
      */
     void run(Scene &scene);
@@ -65,6 +67,9 @@ private:
     bool        m_wireframeMode = false;
     int m_mouseX = 0, m_mouseY = 0;
 
+    struct ImGuiIO  *m_io = nullptr;
+    VkDescriptorPool m_imguiDescriptorPool = VK_NULL_HANDLE;
+
     // Graphics pipeline (initialized in order)
     std::unique_ptr<Core>               m_core;
     std::unique_ptr<Swapchain>          m_swapchain;
@@ -79,8 +84,10 @@ private:
     // Initialization helpers
     void initializeSDL(const std::string &title);
     void initializeVulkan();
+    void initImgui();
     void shutdownSDL();
     void shutdownVulkan();
+    void shutdownImgui();
 
     // Main loop helpers
     bool pollEvents();
