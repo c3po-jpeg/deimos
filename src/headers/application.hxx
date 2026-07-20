@@ -65,10 +65,7 @@ private:
     int         m_height;
     bool        m_windowResized = false;
     bool        m_wireframeMode = false;
-    int m_mouseX = 0, m_mouseY = 0;
-
-    struct ImGuiIO  *m_io = nullptr;
-    VkDescriptorPool m_imguiDescriptorPool = VK_NULL_HANDLE;
+    int         m_mouseX = 0, m_mouseY = 0;
 
     // Graphics pipeline (initialized in order)
     std::unique_ptr<Core>               m_core;
@@ -80,14 +77,19 @@ private:
     std::unique_ptr<Pipeline>           m_pipeline;
     std::unique_ptr<Pipeline>           m_wireframePipeline;
     std::unique_ptr<Renderer>           m_renderer;
+    std::unique_ptr<Gui>                m_gui;
+
 
     // Initialization helpers
     void initializeSDL(const std::string &title);
     void initializeVulkan();
     void initImgui();
+
     void shutdownSDL();
     void shutdownVulkan();
     void shutdownImgui();
+
+    void debugWindow(float deltaTime);
 
     // Main loop helpers
     bool pollEvents();

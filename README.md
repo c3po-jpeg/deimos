@@ -71,7 +71,7 @@ sudo dnf install cmake gcc-c++ make git
 sudo dnf install vulkan-loader-devel vulkan-headers vulkan-tools
 
 # Install SDL2 development libraries
-sudo dnf install SDL2-devel
+sudo dnf install SDL3-devel
 ```
 
 #### macOS
