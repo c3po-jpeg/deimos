@@ -292,7 +292,7 @@ void Application::debugWindow(float deltaTime)
 
 void Application::renderFrame(Scene &scene)
 {
-	m_renderer->clearColor(0.01, 0.01, 0.01);
+	m_renderer->clearColor(0.001, 0.001, 0.001);
 
 	// Compute light space matrix
 	auto light = scene.getLight();
