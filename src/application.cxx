@@ -7,7 +7,6 @@
 #include <SDL3/SDL_vulkan.h>
 
 #include <iostream>
-#include <vulkan/vulkan.h>
 
 #include "../external/imgui/imgui.h"
 #include "../external/imgui/imgui_impl_sdl3.h"
@@ -24,6 +23,9 @@
 #include "../renderer/headers/swapchain.hxx"
 #include "../renderer/headers/ubo.hxx"
 #include "../renderer/headers/vertex.hxx"
+
+constexpr uint64_t targetFps = 60.0f;
+constexpr uint64_t targetFrameTime = 1000.0f / targetFps; 
 
 Application::Application(const std::string &title, int width, int height)
 	: m_width(width), m_height(height)
@@ -172,10 +174,10 @@ void Application::run(Scene &scene)
 {
 	uint64_t lastTicks = SDL_GetTicks();
 	float deltaTime = 0.0f;
-	bool running = true;
 
 	while (true)
 	{
+		const uint64_t frameStart = SDL_GetTicks();
 		const uint64_t now = SDL_GetTicks();
 		deltaTime = static_cast<float>(now - lastTicks) / 1000.0f;
 		lastTicks = now;
@@ -198,6 +200,13 @@ void Application::run(Scene &scene)
 		m_gui->render();
 
 		renderFrame(scene);
+		//frame time
+		const uint64_t frameTime = SDL_GetTicks() - frameStart;
+		if(frameTime < targetFrameTime)
+		{
+			SDL_Delay(static_cast<uint32_t>(targetFrameTime - frameTime));
+		}
+		
 	}
 
 	// Ensure GPU is idle before Scene is destroyed

@@ -40,6 +40,8 @@ Contact testSpherePlane (RigidBody &sphere, RigidBody &plane);
 Contact testBoxPlane    (RigidBody &box,    RigidBody &plane);
 Contact testBoxSphere   (RigidBody &box,    RigidBody &sphere);
 
+bool RaySpphere(const Vector3f *rayStart, const Vector3f &rayDir, const Vector3f &sphereCenter, const float sphereRadius, float& t1, float &t2);
+
 Contact testCollision(RigidBody *a, RigidBody *b);
 
 // =============================================================================

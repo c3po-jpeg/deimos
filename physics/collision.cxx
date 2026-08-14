@@ -35,7 +35,6 @@ Contact testCollision(RigidBody *a, RigidBody *b)
         case ColliderType::Sphere:
             return testSphereSphere(a, b);
             break;
-
         default:
             return Contact();
         }
@@ -45,6 +44,27 @@ Contact testCollision(RigidBody *a, RigidBody *b)
     }
 
     return Contact();
+}
+
+bool RaySpphere(const Vector3f &rayStart, const Vector3f &rayDir, const Vector3f &sphereCenter, const float sphereRadius, float& t1, float &t2)
+{
+    const Vector3f m = sphereCenter - rayStart;
+    const float a = dot(rayDir, rayDir);
+    const float b = dot(m, rayDir);
+    const float c = dot(m, m) - sphereRadius * sphereRadius;
+
+    const float delta = b * b - a * c;
+    const float invA = 1.0f / a;
+    if (delta < 0)
+    {
+        return false;
+    }
+
+    const float deltaRoot = sqrt(delta);
+    t1 = invA * (b - deltaRoot);
+    t2 = invA * (b + deltaRoot);
+    
+    return true;
 }
 
 void resolveCollision(Contact &contact)
