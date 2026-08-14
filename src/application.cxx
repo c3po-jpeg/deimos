@@ -24,8 +24,7 @@
 #include "../renderer/headers/ubo.hxx"
 #include "../renderer/headers/vertex.hxx"
 
-constexpr uint64_t targetFps = 60.0f;
-constexpr uint64_t targetFrameTime = 1000.0f / targetFps; 
+constexpr double targetFrameTime = 1.0 / 60.0; // 0.166666666... secs
 
 Application::Application(const std::string &title, int width, int height)
 	: m_width(width), m_height(height)
@@ -172,15 +171,16 @@ void Application::shutdownVulkan()
 
 void Application::run(Scene &scene)
 {
-	uint64_t lastTicks = SDL_GetTicks();
-	float deltaTime = 0.0f;
+
+	const Uint64 frequency = SDL_GetPerformanceFrequency();
+	Uint64 lastCounter     = SDL_GetPerformanceCounter();
+	float deltaTime        = 0.0f;
 
 	while (true)
 	{
-		const uint64_t frameStart = SDL_GetTicks();
-		const uint64_t now = SDL_GetTicks();
-		deltaTime = static_cast<float>(now - lastTicks) / 1000.0f;
-		lastTicks = now;
+		const Uint64 frameStart = SDL_GetPerformanceCounter();
+		deltaTime = static_cast<float>(static_cast<double>(frameStart - lastCounter) / frequency);
+		lastCounter = frameStart;
 
 		if (!pollEvents())
 			break;
@@ -200,17 +200,16 @@ void Application::run(Scene &scene)
 		m_gui->render();
 
 		renderFrame(scene);
-		//frame time
-		const uint64_t frameTime = SDL_GetTicks() - frameStart;
+
+		const Uint64 frameEnd  = SDL_GetPerformanceCounter();
+		const double frameTime = static_cast<double>(frameEnd - frameStart) / frequency;
 		if(frameTime < targetFrameTime)
 		{
-			SDL_Delay(static_cast<uint32_t>(targetFrameTime - frameTime));
+			const double remaining = targetFrameTime - frameTime;
+			if(remaining > 0.0) SDL_Delay(static_cast<Uint32>(remaining * 1000.0));
 		}
-		
 	}
 
-	// Ensure GPU is idle before Scene is destroyed
-	// (Scene's buffers are still being referenced by command buffers)
 	if (m_core)
 		vkDeviceWaitIdle(m_core->getDevice());
 }
@@ -293,7 +292,7 @@ void Application::debugWindow(float deltaTime)
 
 void Application::renderFrame(Scene &scene)
 {
-	m_renderer->clearColor(0.2, 0.3, 0.6);
+	m_renderer->clearColor(0.01, 0.01, 0.01);
 
 	// Compute light space matrix
 	auto light = scene.getLight();
