@@ -46,7 +46,7 @@ Contact testCollision(RigidBody *a, RigidBody *b)
     return Contact();
 }
 
-bool RaySpphere(const Vector3f &rayStart, const Vector3f &rayDir, const Vector3f &sphereCenter, const float sphereRadius, float& t1, float &t2)
+bool RaySphere(const Vector3f &rayStart, const Vector3f &rayDir, const Vector3f &sphereCenter, const float sphereRadius, float& t1, float &t2)
 {
     const Vector3f m = sphereCenter - rayStart;
     const float a = dot(rayDir, rayDir);
