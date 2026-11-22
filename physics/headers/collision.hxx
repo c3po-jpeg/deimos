@@ -41,6 +41,7 @@ Contact testBoxPlane    (RigidBody &box,    RigidBody &plane);
 Contact testBoxSphere   (RigidBody &box,    RigidBody &sphere);
 
 bool RaySphere(const Vector3f &rayStart, const Vector3f &rayDir, const Vector3f &sphereCenter, const float sphereRadius, float& t1, float &t2);
+bool intersect(RigidBody *bodyA, RigidBody *bodyB, const float *dt, Contact &ct);
 
 Contact testCollision(RigidBody *a, RigidBody *b);
 

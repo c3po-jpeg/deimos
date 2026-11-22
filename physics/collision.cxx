@@ -2,6 +2,26 @@
 #include "headers/rigidbody.hxx"
 #include "headers/collider.hxx"
 
+Contact testCollision(RigidBody *a, RigidBody *b)
+{
+    switch (a->collider->getType())
+    {
+    case ColliderType::Sphere:
+    {
+        switch (b->collider->getType())
+        {
+        case ColliderType::Sphere:
+            return testSphereSphere(a, b);
+            break;
+        default:
+            return Contact();
+        }
+    }
+    default:
+        return Contact();
+    }
+}
+
 Contact testSphereSphere(RigidBody *a, RigidBody *b)
 {
     Contact c;
@@ -24,27 +44,6 @@ Contact testSphereSphere(RigidBody *a, RigidBody *b)
     return c;
 }
 
-Contact testCollision(RigidBody *a, RigidBody *b)
-{
-    switch (a->collider->getType())
-    {
-    case ColliderType::Sphere:
-    {
-        switch (b->collider->getType())
-        {
-        case ColliderType::Sphere:
-            return testSphereSphere(a, b);
-            break;
-        default:
-            return Contact();
-        }
-    }
-    default:
-        return Contact();
-    }
-
-    return Contact();
-}
 
 bool RaySphere(const Vector3f &rayStart, const Vector3f &rayDir, const Vector3f &sphereCenter, const float sphereRadius, float& t1, float &t2)
 {
@@ -65,6 +64,11 @@ bool RaySphere(const Vector3f &rayStart, const Vector3f &rayDir, const Vector3f 
     t2 = invA * (b + deltaRoot);
     
     return true;
+}
+
+bool intersect(RigidBody *bodyA, RigidBody *bodyB, const float *dt, Contact &ct)
+{
+
 }
 
 void resolveCollision(Contact &contact)
