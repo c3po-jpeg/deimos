@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 
         // Initialize application (Vulkan, SDL, rendering pipeline)
 
-        Application app("Enceladus", WINDOW_WIDTH, WINDOW_HEIGHT);
+        Application app("Deimos", WINDOW_WIDTH, WINDOW_HEIGHT);
         Scene scene(app.getCore(), WINDOW_WIDTH, WINDOW_HEIGHT);
         // Add game objects
         // Large static floor

@@ -2,7 +2,7 @@
 # renderer/CMakeLists.txt
 # ---------------------------------------------------------------------------
 
-add_library(enceladus_renderer STATIC
+add_library(deimos_renderer STATIC
     buffer.cxx
     core.cxx
     descriptors.cxx
@@ -17,12 +17,12 @@ add_library(enceladus_renderer STATIC
     vertex.cxx
 )
 
-target_include_directories(enceladus_renderer
+target_include_directories(deimos_renderer
     PUBLIC
         headers
 )
 
-target_link_libraries(enceladus_renderer
+target_link_libraries(deimos_renderer
     PUBLIC
         Vulkan::Vulkan
         SDL3::SDL3

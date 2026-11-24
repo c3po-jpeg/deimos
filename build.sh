@@ -9,7 +9,7 @@ for args in "$@"; do
     fi
 done
 
-echo "Building Enceladus..."
+echo "Building Deimos..."
 
 if [ ! -d "build" ]; then
     echo "Creating build directory..."
@@ -81,6 +81,6 @@ fi
 cd ..
 
 if [ "$RUN" = true ]; then
-    echo "Running Enceladus..."
-    ./build/src/enceladus
+    echo "Running Deimos..."
+    ./build/src/deimos
 fi

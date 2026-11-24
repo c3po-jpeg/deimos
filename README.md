@@ -1,6 +1,6 @@
-# Enceladus - Vulkan/SDL2 Project
+# Deimos - Vulkan/SDL2 Project
 
-A cross-platform C++ project for developing with Vulkan and SDL2 using CMake.
+A cross-platform C++ project for developing with Vulkan and SDL3 using CMake.
 
 ## Features
 
@@ -96,7 +96,7 @@ brew install cmake sdl2 vulkan-headers vulkan-tools
 
 2. **Change to the project directory:**
    ```bash
-   cd /c/path/to/enceladus
+   cd /c/path/to/deimos
    ```
 
 3. **Build with the helper script:**
@@ -137,7 +137,7 @@ brew install cmake sdl2 vulkan-headers vulkan-tools
 
 4. **Run the executable:**
    ```bash
-   ./build/src/enceladus.exe
+   ./build/src/deimos.exe
    ```
 
 
@@ -145,7 +145,7 @@ brew install cmake sdl2 vulkan-headers vulkan-tools
 
 1. **Navigate to project directory:**
 ```bash
-cd /path/to/enceladus
+cd /path/to/deimos
 ```
 
 2. **Build:**
@@ -156,7 +156,7 @@ cmake --build build
 
 3. **Run the executable:**
 ```bash
-./build/src/enceladus
+./build/src/deimos
 ```
 
 ---
@@ -188,14 +188,7 @@ ln -s /usr/bin/mingw32-make /usr/bin/make
 
 **Linux:** Install the `-dev` packages (libvulkan-dev, libsdl2-dev), not just the runtime libraries.
 
-### Build fails with "SDL2::SDL2" not found
 
-Delete the build directory and reconfigure from scratch:
-```bash
-rm -rf build
-cmake -B build -S .
-cmake --build build
-```
 
 ### VS Code IntelliSense doesn't recognize headers
 
