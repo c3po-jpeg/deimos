@@ -1,6 +1,6 @@
 # ---------------------------------------------------------------------------
 # external/imgui/CMakeLists.txt
-# Builds Dear ImGui as a static library with the Vulkan + SDL2 backends.
+# Builds Dear ImGui as a static library with the Vulkan + SDL3 backends.
 #
 # Expected files in this directory (copy from the imgui repo):
 #   Core:

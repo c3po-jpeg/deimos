@@ -1,11 +1,11 @@
-# Deimos - Vulkan/SDL2 Project
+# Deimos - Vulkan/SDL3 Project
 
 A cross-platform C++ project for developing with Vulkan and SDL3 using CMake.
 
 ## Features
 
 - **Vulkan Graphics Rendering**: High-performance 3D graphics using Vulkan API
-- **SDL2 Windowing**: Cross-platform window management and input handling
+- **SDL3 Windowing**: Cross-platform window management and input handling
 - **3D Camera System**: FPS-style camera with WASD movement, mouse look, and vertical controls (E/Q)
 - **Shadow Mapping**: Real-time shadows with Percentage Closer Filtering (PCF) for soft shadow edges
 
@@ -34,7 +34,7 @@ A cross-platform C++ project for developing with Vulkan and SDL3 using CMake.
    # Core tools (same for both prefixes)
    pacman -S mingw-w64-x86_64-cmake mingw-w64-x86_64-gcc mingw-w64-x86_64-make
 
-   # Vulkan headers/libs and SDL2
+   # Vulkan headers/libs and SDL3
    pacman -S mingw-w64-x86_64-vulkan mingw-w64-x86_64-sdl2
    ```
 
@@ -57,7 +57,7 @@ sudo apt-get install cmake build-essential git
 # Install Vulkan development libraries
 sudo apt-get install libvulkan-dev vulkan-tools
 
-# Install SDL2 development libraries
+# Install SDL3 development libraries
 sudo apt-get install libsdl2-dev
 ```
 
@@ -70,7 +70,7 @@ sudo dnf install cmake gcc-c++ make git
 # Install Vulkan development libraries
 sudo dnf install vulkan-loader-devel vulkan-headers vulkan-tools
 
-# Install SDL2 development libraries
+# Install SDL3 development libraries
 sudo dnf install SDL3-devel
 ```
 
@@ -163,13 +163,13 @@ cmake --build build
 
 ## Troubleshooting
 
-### CMake cannot find Vulkan or SDL2
+### CMake cannot find Vulkan or SDL3
 
 **Windows (MSYS2):** Ensure you're using either the "MSYS2 MinGW 64-bit" or
 "MSYS2 UCRT64" terminal – not the generic "MSYS2 MSYS" shell.  Verify the
-vulkan/SDL2 packages are installed:
+vulkan/SDL3 packages are installed:
 ```bash
-pacman -Q mingw-w64-x86_64-vulkan mingw-w64-x86_64-SDL2
+pacman -Q mingw-w64-x86_64-vulkan mingw-w64-x86_64-SDL3
 ```
 
 ### CMake complains `CMAKE_MAKE_PROGRAM is not set`
